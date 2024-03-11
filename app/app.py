@@ -64,7 +64,49 @@ def load_localities():
     return df
 
 
-my_data_path = '../MY data/'
+def load_rail():
+    file_name = "zhd_roads.geojson"
+    path_to_json = my_data_path + "/metadata/" + file_name
+    df = gpd.read_file(path_to_json)
+    return df
+
+
+def load_rivers():
+    file_name = 'rivers.geojson'
+    path_to_json = my_data_path + "/metadata/" + file_name
+    df = gpd.read_file(path_to_json)
+    return df
+
+
+def load_roads():
+    file_name = 'auto_roads.geojson'
+    path_to_json = my_data_path + "/metadata/" + file_name
+    df = gpd.read_file(path_to_json)
+    return df
+
+
+def load_loc_buffers():
+    file_name = 'localities_buffers.json'
+    path_to_json = my_data_path + "/MY buffers/" + file_name
+    df = pd_to_gpd_w_geom(pd.read_json(path_to_json))
+    return df
+
+
+def load_road_buffers():
+    file_name = 'roads_buffers.json'
+    path_to_json = my_data_path + "/MY buffers/" + file_name
+    df = pd_to_gpd_w_geom(pd.read_json(path_to_json))
+    return df
+
+
+def load_river_buffers():
+    file_name = 'rivers_buffers.json'
+    path_to_json = my_data_path + "/MY buffers/" + file_name
+    df = pd_to_gpd_w_geom(pd.read_json(path_to_json))
+    return df
+
+
+my_data_path = '../../MY data/'
 # Map options
 map_background_options = ["carto-positron", "open-street-map"]
 map_options = {'map_center_start': {"lat": 52.25, "lon": 104.3},
@@ -74,7 +116,7 @@ map_options = {'map_center_start': {"lat": 52.25, "lon": 104.3},
 
 
 df_loc = load_localities()
-map_fig = px.choropleth_mapbox(df_loc, geojson=df_loc.geometry, locations=df_loc.index,
+map_loc = px.choropleth_mapbox(df_loc, geojson=df_loc.geometry, locations=df_loc.index,
                                mapbox_style=map_options['mapbox_style'],
                                opacity=map_options['opacity'],
                                center=map_options['map_center_start'],
@@ -83,10 +125,90 @@ map_fig = px.choropleth_mapbox(df_loc, geojson=df_loc.geometry, locations=df_loc
                                hover_name='name',
                                #    hover_data={'type'},
                                color_discrete_sequence=['yellow']
-                               )
+                               ).update_traces(name="map_loc")
+map_loc.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0}, width=1900,
+                      height=800)
 
-map_fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
-map_fig.show()
+df_rail = load_rail()
+lats, lons = get_coords_linestring(df_rail)
+map_rail = px.line_mapbox(df_rail, lat=lats, lon=lons,
+                          color_discrete_sequence=['black'],
+                          # color=lats,
+                          # hover_name='name',
+                          # hover_data=None
+                          ).update_traces(name="map_rail").data[0]
+
+df_rivers = load_rivers()
+lats, lons = get_coords_linestring(df_rivers)
+map_rivers = px.line_mapbox(df_rivers, lat=lats, lon=lons,
+                            color_discrete_sequence=['blue'],
+                            # color=lats,
+                            # hover_name='name',
+                            # hover_data=None
+                            ).update_traces(name="map_rivers", line={'width': 1}).data[0]
+
+df_roads = load_roads()
+lats, lons = get_coords_linestring(df_roads)
+map_roads = px.line_mapbox(df_roads, lat=lats, lon=lons,
+                           color_discrete_sequence=['orange'],
+                           # color=lats,
+                           # hover_name='name',
+                           # hover_data=None
+                           ).update_traces(name="map_rivers", line={'width': 2}).data[0]
+
+
+df_loc_buf = load_loc_buffers()
+map_loc_buf = px.choropleth_mapbox(df_loc_buf, geojson=df_loc_buf.geometry, locations=df_loc_buf.index,
+                                   opacity=0.5,
+                                   labels={'type': 'Тип'},
+                                   #    hover_name='name',
+                                   #    hover_data={'type'},
+                                   color_discrete_sequence=['orange'],
+                                   ).update_traces(name="map_loc_buf", visible=False).data[0]
+
+
+df_road_buf = load_road_buffers()
+map_roads_buf = px.choropleth_mapbox(df_road_buf, geojson=df_road_buf.geometry,
+                                     locations=df_road_buf.index,
+                                     opacity=0.5,
+                                     labels={'type': 'Тип'},
+                                     #    hover_name='name',
+                                     #    hover_data={'type'},
+                                     color_discrete_sequence=['yellow'],
+                                     ).update_traces(name="map_roads_buf", visible=False).data[0]
+
+df_rivers_buf = load_river_buffers()
+map_rivers_buf = px.choropleth_mapbox(df_rivers_buf, geojson=df_rivers_buf.geometry,
+                                      locations=df_rivers_buf.index,
+                                      opacity=0.5,
+                                      labels={'type': 'Тип'},
+                                      #    hover_name='name',
+                                      #    hover_data={'type'},
+                                      color_discrete_sequence=['yellow'],
+                                      ).update_traces(name="map_rivers_buf", visible=False).data[0]
+
+comb_fig = go.Figure(map_loc)  # 0
+comb_fig.add_trace(map_rivers)  # 1
+comb_fig.add_trace(map_rail)  # 2
+comb_fig.add_trace(map_roads)  # 3
+# comb_fig.add_trace(map_loc_buf)  # 4
+# comb_fig.add_trace(map_roads_buf)  # 5
+# comb_fig.add_trace(map_rivers_buf)  # 6
+
+# comb_fig.update_traces(visible=False, selector={})
+
+app = Dash()
+app.layout = html.Div([
+    dcc.Graph(id="map", figure=comb_fig,)
+],
+    style={"margin": 10, "maxWidth": "100%", "height": "90vh"}
+)
+
+# Turn off reloader if inside Jupyter
+app.run_server(host='0.0.0.0', debug=True)
+
+# map_loc.show()
+
 
 # Incorporate data
 # df = pd.read_csv(
@@ -151,6 +273,6 @@ map_fig.show()
 #     return fig
 
 
-# # Run the app
+# Run the app
 # if __name__ == "__main__":
 #     app.run(debug=True, use_reloader=False)
