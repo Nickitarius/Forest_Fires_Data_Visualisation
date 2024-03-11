@@ -47,14 +47,6 @@ def load_forest_quarters():
     path_to_json = my_data_path + "Лесные кварталы/" + file_name
     quaters_df = pd_to_gpd_w_geom(pd.read_json(path_to_json))
     return quaters_df
-    # quarter_map_trace = px.choropleth_mapbox(quaters_df, geojson=quaters_df.geometry,
-    #                                          locations=quaters_df.index, mapbox_style="carto-positron",
-    #                                          center=quaters_df, zoom=quaters_df, opacity=0.25,
-    #                                          color_discrete_sequence=px.colors.qualitative.Set1
-    #                                          #    color=gdf_valid['name_in'],
-    #                                          #    labels={'name_in': 'name'}
-    #                                          ).data[0]
-    # return quarter_map_trace
 
 
 def load_localities():
@@ -110,9 +102,9 @@ my_data_path = '../../MY data/'
 # Map options
 map_background_options = ["carto-positron", "open-street-map"]
 map_options = {'map_center_start': {"lat": 52.25, "lon": 104.3},
-               'map_zoom_start': 6,
-               'opacity': 0.15,
-               'mapbox_style': map_background_options[0]}
+               'map_zoom_start': 6, 'opacity': 0.15,
+               'mapbox_style': map_background_options[0],
+               'width': 1900, 'height': 800}
 
 
 df_loc = load_localities()
@@ -133,28 +125,19 @@ df_rail = load_rail()
 lats, lons = get_coords_linestring(df_rail)
 map_rail = px.line_mapbox(df_rail, lat=lats, lon=lons,
                           color_discrete_sequence=['black'],
-                          # color=lats,
-                          # hover_name='name',
-                          # hover_data=None
-                          ).update_traces(name="map_rail").data[0]
+                          ).update_traces(name="map_rail", hovertemplate=None, hoverinfo='skip',).data[0]
 
 df_rivers = load_rivers()
 lats, lons = get_coords_linestring(df_rivers)
 map_rivers = px.line_mapbox(df_rivers, lat=lats, lon=lons,
                             color_discrete_sequence=['blue'],
-                            # color=lats,
-                            # hover_name='name',
-                            # hover_data=None
-                            ).update_traces(name="map_rivers", line={'width': 1}).data[0]
+                            ).update_traces(name="map_rivers", line={'width': 1}, hovertemplate=None, hoverinfo='skip',).data[0]
 
 df_roads = load_roads()
 lats, lons = get_coords_linestring(df_roads)
 map_roads = px.line_mapbox(df_roads, lat=lats, lon=lons,
                            color_discrete_sequence=['orange'],
-                           # color=lats,
-                           # hover_name='name',
-                           # hover_data=None
-                           ).update_traces(name="map_rivers", line={'width': 2}).data[0]
+                           ).update_traces(name="map_roads", line={'width': 2}, hovertemplate=None, hoverinfo='skip',).data[0]
 
 
 df_loc_buf = load_loc_buffers()
@@ -191,6 +174,7 @@ comb_fig = go.Figure(map_loc)  # 0
 comb_fig.add_trace(map_rivers)  # 1
 comb_fig.add_trace(map_rail)  # 2
 comb_fig.add_trace(map_roads)  # 3
+
 # comb_fig.add_trace(map_loc_buf)  # 4
 # comb_fig.add_trace(map_roads_buf)  # 5
 # comb_fig.add_trace(map_rivers_buf)  # 6
@@ -204,75 +188,4 @@ app.layout = html.Div([
     style={"margin": 10, "maxWidth": "100%", "height": "90vh"}
 )
 
-# Turn off reloader if inside Jupyter
 app.run_server(host='0.0.0.0', debug=True)
-
-# map_loc.show()
-
-
-# Incorporate data
-# df = pd.read_csv(
-#     "https://raw.githubusercontent.com/plotly/datasets/master/gapminder2007.csv"
-# )
-
-# Initialize the app - incorporate a Dash Bootstrap theme
-# external_stylesheets = [dbc.themes.CERULEAN]
-# app = Dash(__name__, external_stylesheets=external_stylesheets)
-
-# # App layout
-# app.layout = dbc.Container(
-#     [
-#         dbc.Row(
-#             [
-#                 html.Div(
-#                     "My First App with Data, Graph, and Controls",
-#                     className="text-primary text-center fs-3",
-#                 )
-#             ]
-#         ),
-#         dbc.Row(
-#             [
-#                 dbc.RadioItems(
-#                     options=[
-#                         {"label": x, "value": x}
-#                         for x in ["pop", "lifeExp", "gdpPercap"]
-#                     ],
-#                     value="lifeExp",
-#                     inline=True,
-#                     id="radio-buttons-final",
-#                 )
-#             ]
-#         ),
-#         dbc.Row(
-#             [
-#                 dbc.Col(
-#                     [
-#                         dash_table.DataTable(
-#                             data=df.to_dict("records"),
-#                             page_size=12,
-#                             style_table={"overflowX": "auto"},
-#                         )
-#                     ],
-#                     width=6,
-#                 ),
-#                 dbc.Col([dcc.Graph(figure={}, id="my-first-graph-final")], width=6),
-#             ]
-#         ),
-#     ],
-#     fluid=True,
-# )
-
-
-# # Add controls to build the interaction
-# @callback(
-#     Output(component_id="my-first-graph-final", component_property="figure"),
-#     Input(component_id="radio-buttons-final", component_property="value"),
-# )
-# def update_graph(col_chosen):
-#     fig = px.histogram(df, x="continent", y=col_chosen, histfunc="avg")
-#     return fig
-
-
-# Run the app
-# if __name__ == "__main__":
-#     app.run(debug=True, use_reloader=False)
