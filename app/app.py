@@ -115,9 +115,9 @@ map_loc = px.choropleth_mapbox(df_loc, geojson=df_loc.geometry, locations=df_loc
                                zoom=map_options['map_zoom_start'],
                                labels={'type': 'Тип'},
                                hover_name='name',
-                               #    hover_data={'type'},
+                               hover_data=['type'],
                                color_discrete_sequence=['yellow']
-                               ).update_traces(name="map_loc")
+                               ).update_traces(name="map_loc",)
 map_loc.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0}, width=1900,
                       height=800)
 
@@ -125,27 +125,28 @@ df_rail = load_rail()
 lats, lons = get_coords_linestring(df_rail)
 map_rail = px.line_mapbox(df_rail, lat=lats, lon=lons,
                           color_discrete_sequence=['black'],
-                          ).update_traces(name="map_rail", hovertemplate=None, hoverinfo='skip',).data[0]
+                          ).update_traces(name="map_rail",
+                                          hovertemplate=None, hoverinfo='skip',).data[0]
 
 df_rivers = load_rivers()
 lats, lons = get_coords_linestring(df_rivers)
 map_rivers = px.line_mapbox(df_rivers, lat=lats, lon=lons,
                             color_discrete_sequence=['blue'],
-                            ).update_traces(name="map_rivers", line={'width': 1}, hovertemplate=None, hoverinfo='skip',).data[0]
+                            ).update_traces(name="map_rivers", line={'width': 1},
+                                            hovertemplate=None, hoverinfo='skip',).data[0]
 
 df_roads = load_roads()
 lats, lons = get_coords_linestring(df_roads)
 map_roads = px.line_mapbox(df_roads, lat=lats, lon=lons,
                            color_discrete_sequence=['orange'],
-                           ).update_traces(name="map_roads", line={'width': 2}, hovertemplate=None, hoverinfo='skip',).data[0]
+                           ).update_traces(name="map_roads", line={'width': 2},
+                                           hovertemplate=None, hoverinfo='skip',).data[0]
 
 
 df_loc_buf = load_loc_buffers()
 map_loc_buf = px.choropleth_mapbox(df_loc_buf, geojson=df_loc_buf.geometry, locations=df_loc_buf.index,
                                    opacity=0.5,
                                    labels={'type': 'Тип'},
-                                   #    hover_name='name',
-                                   #    hover_data={'type'},
                                    color_discrete_sequence=['orange'],
                                    ).update_traces(name="map_loc_buf", visible=False).data[0]
 
@@ -155,8 +156,6 @@ map_roads_buf = px.choropleth_mapbox(df_road_buf, geojson=df_road_buf.geometry,
                                      locations=df_road_buf.index,
                                      opacity=0.5,
                                      labels={'type': 'Тип'},
-                                     #    hover_name='name',
-                                     #    hover_data={'type'},
                                      color_discrete_sequence=['yellow'],
                                      ).update_traces(name="map_roads_buf", visible=False).data[0]
 
@@ -165,8 +164,6 @@ map_rivers_buf = px.choropleth_mapbox(df_rivers_buf, geojson=df_rivers_buf.geome
                                       locations=df_rivers_buf.index,
                                       opacity=0.5,
                                       labels={'type': 'Тип'},
-                                      #    hover_name='name',
-                                      #    hover_data={'type'},
                                       color_discrete_sequence=['yellow'],
                                       ).update_traces(name="map_rivers_buf", visible=False).data[0]
 
