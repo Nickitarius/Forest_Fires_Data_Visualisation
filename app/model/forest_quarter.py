@@ -27,3 +27,7 @@ class ForestQuarter(DB):
     uch_forestry_id: Mapped[int] = mapped_column(ForeignKey("uch_forestries.id"))
     uch_forestry: Mapped["UchForestry"] = relationship(
         back_populates="forest_quarters")
+    
+    #Many-to-One dachas
+    dacha_id: Mapped[int] = mapped_column(ForeignKey("dachas.id"))
+    dacha: Mapped["Dacha"] = relationship(back_populates="forest_quarters")
