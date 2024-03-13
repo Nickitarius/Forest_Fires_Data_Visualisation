@@ -7,8 +7,9 @@ import plotly.graph_objects as go
 import plotly.express as px
 import shapely
 import shapely.geometry as geometry
+import config.db_config as db_config
 
-MY_DATA_PATH = '../../MY data/'
+MY_DATA_PATH = '../MY data/'
 
 
 def pd_to_gpd_w_geom(df):
@@ -57,6 +58,9 @@ def load_geo_from_json(file_name):
     return df
 
 
+sf = db_config.get_session_factory()
+# sf
+
 # Map options
 map_background_options = ["carto-positron", "open-street-map"]
 map_options = {'map_center_start': {"lat": 52.25, "lon": 104.3},
@@ -102,7 +106,8 @@ map_roads = px.line_mapbox(df_roads, lat=lats, lon=lons,
 
 
 df_loc_buf = load_geo_from_json("MY buffers/localities_buffers.json")
-map_loc_buf = px.choropleth_mapbox(df_loc_buf, geojson=df_loc_buf.geometry, locations=df_loc_buf.index,
+map_loc_buf = px.choropleth_mapbox(df_loc_buf, geojson=df_loc_buf.geometry,
+                                   locations=df_loc_buf.index,
                                    opacity=0.5,
                                    labels={'type': 'Тип'},
                                    color_discrete_sequence=['orange'],
