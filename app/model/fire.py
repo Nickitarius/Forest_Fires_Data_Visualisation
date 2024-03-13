@@ -16,8 +16,8 @@ class Fire(DB):
     date_start: Mapped[datetime.date] = mapped_column(Date, nullable=False)
     date_end: Mapped[datetime.date] = mapped_column(Date, nullable=False)
     is_forest: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    geometry: Mapped[Geometry] = mapped_column(
-        Geometry('MULTIPOLYGON'), nullable=False)
+    # geometry: Mapped[Geometry] = mapped_column(
+    #     Geometry('MULTIPOLYGON'), nullable=False)
 
     area_all: Mapped[float] = mapped_column(Double, nullable=False)
     area_forest: Mapped[float] = mapped_column(Double, nullable=False)
