@@ -9,3 +9,6 @@ from model.dacha import Dacha
 from model.forest_seed_zoning_zone import ForestSeedZoningZone
 from model.foresst_zone import ForestZone
 from model.forestry import Forestry
+from model.fire import Fire
+from model.fire_status import FireStatus
+from model.territory_type import TerritoryType
