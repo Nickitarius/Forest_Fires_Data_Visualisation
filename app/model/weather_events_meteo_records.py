@@ -13,5 +13,7 @@ class WeatherEventsMeteoRecords(DB):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    meteo_record: Mapped["MeteoRecord"] = relationship(back_populates="weather_events")
-    weather_event: Mapped["WeatherEvents"] = relationship(back_populates="meteo_records")
+    meteo_record: Mapped["MeteoRecord"] = relationship(
+        back_populates="weather_events")
+    weather_event: Mapped["WeatherEvent"] = relationship(
+        back_populates="meteo_records")

@@ -14,5 +14,7 @@ class ForestQuartersMeteoStations(DB):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    forest_quarter: Mapped["ForestQuarter"] = relationship(back_populates="meteo_stations_all")
-    meteo_station: Mapped["MeteoStations"] = relationship(back_populates="forest_quarters")
+    forest_quarter: Mapped["ForestQuarter"] = relationship(
+        back_populates="meteo_stations_all")
+    meteo_station: Mapped["MeteoStation"] = relationship(
+        back_populates="forest_quarters")
