@@ -1,3 +1,4 @@
 from model.weather_event import WeatherEvent
 from model.meteo_station import MeteoStation
-# import model
+from model.meteo_record import MeteoRecord
+from model.weather_events_meteo_records import WeatherEventsMeteoRecords

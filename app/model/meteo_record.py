@@ -1,4 +1,5 @@
-from sqlalchemy import String, ForeignKey
+import datetime
+from sqlalchemy import String, ForeignKey, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from config.db import DB
 
@@ -6,8 +7,15 @@ from config.db import DB
 class MeteoRecord(DB):
     __tablename__ = "meteo_records"
     id: Mapped[int] = mapped_column(primary_key=True)
-    code: Mapped[int] = mapped_column()
-    description_ru: Mapped[str] = mapped_column(String(20))
+    date: Mapped[datetime.date] = mapped_column(Date, nullable=False)
+    precipitation_mm: Mapped[float] = mapped_column(nullable=False)
+    temp_celsius: Mapped[float] = mapped_column(nullable=False)
+    wind_speed_ms: Mapped[float] = mapped_column(nullable=False)
+    atm_pres_mmhg: Mapped[float] = mapped_column(nullable=False)
+    hor_visibility_km: Mapped[float] = mapped_column(nullable=False)
+    rel_wetness_perc: Mapped[float] = mapped_column(nullable=False)
 
-    def __repr__(self) -> str:
-        return f"Weather event(id={self.id!r}, code={self.code!r}, description_ru={self.description_ru!r})"
+    meteo_station_id: Mapped[int] = mapped_column(
+        ForeignKey("meteo_stations.id"))
+    meteo_station: Mapped['MeteoStation'] = relationship(
+        back_populates="meteo_record")

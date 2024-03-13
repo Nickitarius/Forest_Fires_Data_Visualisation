@@ -1,5 +1,6 @@
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import List
 from config.db import DB
 from geoalchemy2 import Geometry as GAGeometry
 
@@ -11,4 +12,6 @@ class MeteoStation(DB):
     code: Mapped[str] = mapped_column(String(20), nullable=False)
     coords: Mapped[GAGeometry] = mapped_column(
         GAGeometry('POINT'), nullable=False)
-    
+
+    meteo_record: Mapped[List["MeteoRecord"]] = relationship(
+        back_populates="meteo_record")
