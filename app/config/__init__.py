@@ -6,3 +6,4 @@ from model.forest_quarter import ForestQuarter
 from model.forest_quarters_meteo_stations import ForestQuartersMeteoStations
 from model.uch_forestry import UchForestry
 from model.dacha import Dacha
+from model.forest_seed_zoning_zone import ForestSeedZoningZone

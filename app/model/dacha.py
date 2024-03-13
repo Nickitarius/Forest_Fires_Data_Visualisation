@@ -18,3 +18,5 @@ class Dacha(DB):
     #One-to-Many forestr_quarters
     forest_quarters: Mapped[List["ForestQuarter"]] = relationship(back_populates="dacha")
 
+    #One-to-One forest_seed_zoning_zones
+    forest_seed_zoning_zone: Mapped["ForestSeedZoningZone"] = relationship(back_populates="dacha")
