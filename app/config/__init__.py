@@ -8,3 +8,4 @@ from model.uch_forestry import UchForestry
 from model.dacha import Dacha
 from model.forest_seed_zoning_zone import ForestSeedZoningZone
 from model.foresst_zone import ForestZone
+from model.forestry import Forestry

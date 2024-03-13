@@ -16,3 +16,7 @@ class UchForestry(DB):
 
     # One-to-Many dachas
     dachas: Mapped[List["Dacha"]] = relationship(back_populates="uch_forestry")
+
+    #Many-to-One forestries
+    forestry_id: Mapped[int] = mapped_column(ForeignKey("forestries.id"))
+    forestry: Mapped["Forestry"] = relationship(back_populates="uch_forestries")
