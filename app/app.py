@@ -8,6 +8,8 @@ import plotly.express as px
 import shapely
 import shapely.geometry as geometry
 
+MY_DATA_PATH = '../../MY data/'
+
 
 def pd_to_gpd_w_geom(df):
     """Transforms Pandas DF to Geopandas DF, reading geometry stored as WKB from 'geom' field"""
@@ -41,64 +43,20 @@ def get_coords_linestring(gdf):
     return lats, lons
 
 
-def load_forest_quarters():
-    """Loads forest quarters from JSON"""
-    file_name = "user_schema.lesnye_kv_3051.json"
-    path_to_json = my_data_path + "Лесные кварталы/" + file_name
-    quaters_df = pd_to_gpd_w_geom(pd.read_json(path_to_json))
-    return quaters_df
-
-
-def load_localities():
-    file_name = "localities_Irk_obl.geojson"
-    path_to_json = my_data_path + file_name
+def load_geo_from_geojson(file_name):
+    """Загружает географические данные из GEOJSON."""
+    path_to_json = MY_DATA_PATH + file_name
     df = gpd.read_file(path_to_json)
     return df
 
 
-def load_rail():
-    file_name = "zhd_roads.geojson"
-    path_to_json = my_data_path + "/metadata/" + file_name
-    df = gpd.read_file(path_to_json)
-    return df
-
-
-def load_rivers():
-    file_name = 'rivers.geojson'
-    path_to_json = my_data_path + "/metadata/" + file_name
-    df = gpd.read_file(path_to_json)
-    return df
-
-
-def load_roads():
-    file_name = 'auto_roads.geojson'
-    path_to_json = my_data_path + "/metadata/" + file_name
-    df = gpd.read_file(path_to_json)
-    return df
-
-
-def load_loc_buffers():
-    file_name = 'localities_buffers.json'
-    path_to_json = my_data_path + "/MY buffers/" + file_name
+def load_geo_from_json(file_name):
+    """Загружает географические данные из обычного JSON."""
+    path_to_json = MY_DATA_PATH + file_name
     df = pd_to_gpd_w_geom(pd.read_json(path_to_json))
     return df
 
 
-def load_road_buffers():
-    file_name = 'roads_buffers.json'
-    path_to_json = my_data_path + "/MY buffers/" + file_name
-    df = pd_to_gpd_w_geom(pd.read_json(path_to_json))
-    return df
-
-
-def load_river_buffers():
-    file_name = 'rivers_buffers.json'
-    path_to_json = my_data_path + "/MY buffers/" + file_name
-    df = pd_to_gpd_w_geom(pd.read_json(path_to_json))
-    return df
-
-
-my_data_path = '../../MY data/'
 # Map options
 map_background_options = ["carto-positron", "open-street-map"]
 map_options = {'map_center_start': {"lat": 52.25, "lon": 104.3},
@@ -107,7 +65,7 @@ map_options = {'map_center_start': {"lat": 52.25, "lon": 104.3},
                'width': 1900, 'height': 800}
 
 
-df_loc = load_localities()
+df_loc = load_geo_from_geojson("geodata/localities_Irk_obl.geojson")
 map_loc = px.choropleth_mapbox(df_loc, geojson=df_loc.geometry, locations=df_loc.index,
                                mapbox_style=map_options['mapbox_style'],
                                opacity=map_options['opacity'],
@@ -121,21 +79,21 @@ map_loc = px.choropleth_mapbox(df_loc, geojson=df_loc.geometry, locations=df_loc
 map_loc.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0}, width=1900,
                       height=800)
 
-df_rail = load_rail()
+df_rail = load_geo_from_geojson("geodata/zhd_roads.geojson")
 lats, lons = get_coords_linestring(df_rail)
 map_rail = px.line_mapbox(df_rail, lat=lats, lon=lons,
                           color_discrete_sequence=['black'],
                           ).update_traces(name="map_rail",
                                           hovertemplate=None, hoverinfo='skip',).data[0]
 
-df_rivers = load_rivers()
+df_rivers = load_geo_from_geojson("geodata/rivers.geojson")
 lats, lons = get_coords_linestring(df_rivers)
 map_rivers = px.line_mapbox(df_rivers, lat=lats, lon=lons,
                             color_discrete_sequence=['blue'],
                             ).update_traces(name="map_rivers", line={'width': 1},
                                             hovertemplate=None, hoverinfo='skip',).data[0]
 
-df_roads = load_roads()
+df_roads = load_geo_from_geojson("geodata/auto_roads.geojson")
 lats, lons = get_coords_linestring(df_roads)
 map_roads = px.line_mapbox(df_roads, lat=lats, lon=lons,
                            color_discrete_sequence=['orange'],
@@ -143,7 +101,7 @@ map_roads = px.line_mapbox(df_roads, lat=lats, lon=lons,
                                            hovertemplate=None, hoverinfo='skip',).data[0]
 
 
-df_loc_buf = load_loc_buffers()
+df_loc_buf = load_geo_from_json("MY buffers/localities_buffers.json")
 map_loc_buf = px.choropleth_mapbox(df_loc_buf, geojson=df_loc_buf.geometry, locations=df_loc_buf.index,
                                    opacity=0.5,
                                    labels={'type': 'Тип'},
@@ -151,7 +109,7 @@ map_loc_buf = px.choropleth_mapbox(df_loc_buf, geojson=df_loc_buf.geometry, loca
                                    ).update_traces(name="map_loc_buf", visible=False).data[0]
 
 
-df_road_buf = load_road_buffers()
+df_road_buf = load_geo_from_json("MY buffers/roads_buffers.json")
 map_roads_buf = px.choropleth_mapbox(df_road_buf, geojson=df_road_buf.geometry,
                                      locations=df_road_buf.index,
                                      opacity=0.5,
@@ -159,7 +117,7 @@ map_roads_buf = px.choropleth_mapbox(df_road_buf, geojson=df_road_buf.geometry,
                                      color_discrete_sequence=['yellow'],
                                      ).update_traces(name="map_roads_buf", visible=False).data[0]
 
-df_rivers_buf = load_river_buffers()
+df_rivers_buf = load_geo_from_json("MY buffers/rivers_buffers.json")
 map_rivers_buf = px.choropleth_mapbox(df_rivers_buf, geojson=df_rivers_buf.geometry,
                                       locations=df_rivers_buf.index,
                                       opacity=0.5,
