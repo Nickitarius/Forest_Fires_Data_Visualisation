@@ -13,7 +13,7 @@ class Dacha(DB):
 
     # Many-To-One uch_forestries
     uch_forestry_id: Mapped[int] = mapped_column(ForeignKey("uch_forestries.id"))
-    uch_forestry: Mapped["UchForestry"] = relationship(back_populates="children")
+    uch_forestry: Mapped["UchForestry"] = relationship(back_populates="dachas")
 
     #One-to-Many forestr_quarters
     forest_quarters: Mapped[List["ForestQuarter"]] = relationship(back_populates="dacha")

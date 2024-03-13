@@ -14,12 +14,14 @@ class MeteoStation(DB):
         Geometry('POINT'), nullable=False)
 
     # One-to-Many MeteoRecord
-    meteo_record: Mapped[List["MeteoRecord"]] = relationship(
-        back_populates="meteo_record")
+    meteo_records: Mapped[List["MeteoRecord"]] = relationship(
+        back_populates="meteo_station")
 
     # Many-to-Many ForestQuarters
     forest_quarters: Mapped[List["ForestQuartersMeteoStations"]] = relationship(
-        back_populates="nearest_meteo_station_id")
+        back_populates="meteo_station")
+
+    # back_populates="nearest_meteo_station_id")
 
     # One-to-Many ForestQuarter
     forest_quarters_nearest: Mapped[List["ForestQuarter"]] = relationship(

@@ -11,4 +11,4 @@ class TerritoryType(DB):
     name: Mapped[str] = mapped_column(String(20), nullable=False)
 
     #One-to-Many fires
-    fires: Mapped[List["Fire"]] = relationship(back_populates="fire_status")
+    fires: Mapped[List["Fire"]] = relationship(back_populates="territory_type")
