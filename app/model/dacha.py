@@ -20,3 +20,7 @@ class Dacha(DB):
 
     #One-to-One forest_seed_zoning_zones
     forest_seed_zoning_zone: Mapped["ForestSeedZoningZone"] = relationship(back_populates="dacha")
+
+    #Many-to-One forest_zones
+    forest_zone_id: Mapped[int] = mapped_column(ForeignKey("forest_zones.id"))
+    forest_zone: Mapped["ForestZone"] = relationship(back_populates="dachas")
