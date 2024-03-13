@@ -1,8 +1,6 @@
-from typing import List, Optional
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from config.db import DB
-# from model.weather_event import WeatherEvent
 
 DB_DIALECT = "mysql"
 DB_ENGINE = "pymysql"
@@ -21,4 +19,5 @@ session_factory = sessionmaker(bind=engine)
 def get_session_factory():
     DB.metadata.create_all(bind=engine)
     print(f'metadata: {DB.metadata.tables}')
+
     return session_factory()

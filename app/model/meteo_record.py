@@ -1,6 +1,7 @@
 import datetime
 from sqlalchemy import String, ForeignKey, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import List
 from config.db import DB
 
 
@@ -15,7 +16,12 @@ class MeteoRecord(DB):
     hor_visibility_km: Mapped[float] = mapped_column(nullable=False)
     rel_wetness_perc: Mapped[float] = mapped_column(nullable=False)
 
+    # Many-to-One
     meteo_station_id: Mapped[int] = mapped_column(
-        ForeignKey("meteo_stations.id"))
-    meteo_station: Mapped['MeteoStation'] = relationship(
+        ForeignKey("meteo_stations.id"), nullable=False)
+    meteo_station: Mapped["MeteoStation"] = relationship(
+        back_populates="meteo_record_id")
+
+    # Many-to-Many
+    weather_events: Mapped[List["WeatherEventsMeteoRecords"]] = relationship(
         back_populates="meteo_record")
