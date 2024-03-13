@@ -14,10 +14,16 @@ class ForestQuarter(DB):
         Geometry('MULTIPOLYGON'), nullable=False)
 
     # Many-to-One nearest_meteo_station
-    nearest_meteo_station_id: Mapped[int] = mapped_column(ForeignKey("meteo_stations.id"))
+    nearest_meteo_station_id: Mapped[int] = mapped_column(
+        ForeignKey("meteo_stations.id"))
     nearest_meteo_station: Mapped["MeteoStation"] = relationship(
         back_populates="forest_quarters_nearest")
 
-    # Many-to-Many MeteoStation
+    # Many-to-Many mete-stations
     meteo_stations_all: Mapped[List["ForestQuartersMeteoStations"]] = relationship(
         back_populates="forest_quarter")
+
+    # Many-to-One uch_forestries
+    uch_forestry_id: Mapped[int] = mapped_column(ForeignKey("uch_forestries.id"))
+    uch_forestry: Mapped["UchForestry"] = relationship(
+        back_populates="forest_quarters")
