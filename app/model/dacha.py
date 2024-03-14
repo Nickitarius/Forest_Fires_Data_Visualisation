@@ -8,8 +8,8 @@ class Dacha(DB):
     """Лесная дача."""
     __tablename__ = "dachas"
     id: Mapped[int] = mapped_column(primary_key=True)
-    name_en: Mapped[str] = mapped_column(
-        String(50, collation="utf8mb4_general_ci"))
+    name_en: Mapped[Optional[str]] = mapped_column(
+        String(50, collation="utf8mb4_general_ci"), nullable=True)
     name_ru: Mapped[str] = mapped_column(
         String(50, collation="utf8mb4_general_ci"), nullable=False)
 
@@ -27,5 +27,5 @@ class Dacha(DB):
         back_populates="dacha")
 
     # Many-to-One forest_zones
-    forest_zone_id: Mapped[int] = mapped_column(ForeignKey("forest_zones.id"))
-    forest_zone: Mapped["ForestZone"] = relationship(back_populates="dachas")
+    forest_zone_id: Mapped[Optional[int]] = mapped_column(ForeignKey("forest_zones.id"))
+    forest_zone: Mapped[Optional["ForestZone"]] = relationship(back_populates="dachas")

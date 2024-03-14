@@ -1,7 +1,7 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from geoalchemy2 import Geometry
-from typing import List
+from typing import List, Optional
 from config.db import DB
 
 
@@ -31,5 +31,5 @@ class ForestQuarter(DB):
         back_populates="forest_quarters")
 
     # Many-to-One dachas
-    dacha_id: Mapped[int] = mapped_column(ForeignKey("dachas.id"))
-    dacha: Mapped["Dacha"] = relationship(back_populates="forest_quarters")
+    dacha_id: Mapped[Optional[int]] = mapped_column( ForeignKey("dachas.id"))
+    dacha: Mapped[Optional["Dacha"]] = relationship(back_populates="forest_quarters")
