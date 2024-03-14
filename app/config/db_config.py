@@ -12,7 +12,7 @@ DB_CHARSET = "utf8mb4"
 
 db_url = DB_DIALECT + "+" + DB_ENGINE + "://" + DB_USERNAME + ":" + \
     DB_PASSWORD + "@" + DB_HOST + "/" + DB_NAME + "?charset=" + DB_CHARSET
-engine = create_engine(db_url, echo=False)
+engine = create_engine(db_url, echo=True)
 session_factory = sessionmaker(bind=engine)
 
 # Many-to-Many association
