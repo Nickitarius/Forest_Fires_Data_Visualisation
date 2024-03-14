@@ -6,6 +6,7 @@ from config.db import DB
 
 
 class MeteoRecord(DB):
+    """Усреднённые погодные показатели за день. """
     __tablename__ = "meteo_records"
     id: Mapped[int] = mapped_column(primary_key=True)
     date: Mapped[datetime.date] = mapped_column(Date, nullable=False)
@@ -16,12 +17,13 @@ class MeteoRecord(DB):
     hor_visibility_km: Mapped[float] = mapped_column(nullable=False)
     rel_wetness_perc: Mapped[float] = mapped_column(nullable=False)
 
-    # Many-to-One
+    # Many-to-One meteo_stations
     meteo_station_id: Mapped[int] = mapped_column(
         ForeignKey("meteo_stations.id"), nullable=False)
     meteo_station: Mapped["MeteoStation"] = relationship(
-        back_populates="meteo_record_id")
+        back_populates="meteo_records")
 
-    # Many-to-Many
-    weather_events: Mapped[List["WeatherEventsMeteoRecords"]] = relationship(
-        back_populates="meteo_record")
+    # Many-to-Many WeatherEvents
+    weather_events: Mapped[List["WeatherEvent"]] = relationship(
+        secondary="weather_events_meteo_records",
+        back_populates="meteo_records")

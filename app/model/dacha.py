@@ -8,19 +8,24 @@ class Dacha(DB):
     """Лесная дача."""
     __tablename__ = "dachas"
     id: Mapped[int] = mapped_column(primary_key=True)
-    name_en: Mapped[str] = mapped_column(String(50))
-    name_ru: Mapped[str] = mapped_column(String(50), nullable=False)
+    name_en: Mapped[str] = mapped_column(
+        String(50, collation="utf8mb4_general_ci"))
+    name_ru: Mapped[str] = mapped_column(
+        String(50, collation="utf8mb4_general_ci"), nullable=False)
 
     # Many-To-One uch_forestries
-    uch_forestry_id: Mapped[int] = mapped_column(ForeignKey("uch_forestries.id"))
-    uch_forestry: Mapped["UchForestry"] = relationship(back_populates="children")
+    uch_forestry_id: Mapped[int] = mapped_column(
+        ForeignKey("uch_forestries.id"))
+    uch_forestry: Mapped["UchForestry"] = relationship(back_populates="dachas")
 
-    #One-to-Many forestr_quarters
-    forest_quarters: Mapped[List["ForestQuarter"]] = relationship(back_populates="dacha")
+    # One-to-Many forestr_quarters
+    forest_quarters: Mapped[List["ForestQuarter"]
+                            ] = relationship(back_populates="dacha")
 
-    #One-to-One forest_seed_zoning_zones
-    forest_seed_zoning_zone: Mapped["ForestSeedZoningZone"] = relationship(back_populates="dacha")
+    # One-to-One forest_seed_zoning_zones
+    forest_seed_zoning_zone: Mapped["ForestSeedZoningZone"] = relationship(
+        back_populates="dacha")
 
-    #Many-to-One forest_zones
+    # Many-to-One forest_zones
     forest_zone_id: Mapped[int] = mapped_column(ForeignKey("forest_zones.id"))
     forest_zone: Mapped["ForestZone"] = relationship(back_populates="dachas")

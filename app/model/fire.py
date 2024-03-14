@@ -9,15 +9,16 @@ from config.db import DB
 class Fire(DB):
     __tablename__ = "fires"
     id: Mapped[int] = mapped_column(primary_key=True)
-    code: Mapped[str] = mapped_column(String(20), nullable=False)
+    code: Mapped[str] = mapped_column(
+        String(20, collation="utf8mb4_general_ci"), nullable=False)
     # Центр пожара
     coords: Mapped[Geometry] = mapped_column(
         Geometry('POINT'), nullable=False)
     date_start: Mapped[datetime.date] = mapped_column(Date, nullable=False)
     date_end: Mapped[datetime.date] = mapped_column(Date, nullable=False)
     is_forest: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    geometry: Mapped[Geometry] = mapped_column(
-        Geometry('MULTIPOLYGON'), nullable=False)
+    # geometry: Mapped[Geometry] = mapped_column(
+    #     Geometry('MULTIPOLYGON'), nullable=False)
 
     area_all: Mapped[float] = mapped_column(Double, nullable=False)
     area_forest: Mapped[float] = mapped_column(Double, nullable=False)

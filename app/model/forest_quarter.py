@@ -1,5 +1,5 @@
-from sqlalchemy import ForeignKey, Table, Column
-from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase, relationship
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from geoalchemy2 import Geometry
 from typing import List
 from config.db import DB
@@ -19,15 +19,17 @@ class ForestQuarter(DB):
     nearest_meteo_station: Mapped["MeteoStation"] = relationship(
         back_populates="forest_quarters_nearest")
 
-    # Many-to-Many mete-stations
-    meteo_stations_all: Mapped[List["ForestQuartersMeteoStations"]] = relationship(
-        back_populates="forest_quarter")
+    # Many-to-Many meteostations
+    meteo_stations: Mapped[List["MeteoStation"]] = relationship(
+        secondary="forest_quarters_meteo_stations",
+        back_populates="forest_quarters")
 
     # Many-to-One uch_forestries
-    uch_forestry_id: Mapped[int] = mapped_column(ForeignKey("uch_forestries.id"))
+    uch_forestry_id: Mapped[int] = mapped_column(
+        ForeignKey("uch_forestries.id"))
     uch_forestry: Mapped["UchForestry"] = relationship(
         back_populates="forest_quarters")
-    
-    #Many-to-One dachas
+
+    # Many-to-One dachas
     dacha_id: Mapped[int] = mapped_column(ForeignKey("dachas.id"))
     dacha: Mapped["Dacha"] = relationship(back_populates="forest_quarters")
