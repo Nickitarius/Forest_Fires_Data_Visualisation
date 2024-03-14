@@ -1,8 +1,8 @@
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List
-from config.db import DB
 from geoalchemy2 import Geometry as Geometry
+from config.db import DB
 
 
 class MeteoStation(DB):
@@ -20,8 +20,8 @@ class MeteoStation(DB):
         back_populates="meteo_station")
 
     # Many-to-Many ForestQuarters
-    forest_quarters: Mapped[List["ForestQuarters"]] = relationship(
-        secondary="weather_events_meteo_records",
+    forest_quarters: Mapped[List["ForestQuarter"]] = relationship(
+        secondary="forest_quarters_meteo_stations",
         back_populates="meteo_stations")
 
     # back_populates="nearest_meteo_station_id")
