@@ -20,8 +20,9 @@ class MeteoStation(DB):
         back_populates="meteo_station")
 
     # Many-to-Many ForestQuarters
-    forest_quarters: Mapped[List["ForestQuartersMeteoStations"]] = relationship(
-        back_populates="meteo_station")
+    forest_quarters: Mapped[List["ForestQuarters"]] = relationship(
+        secondary="weather_events_meteo_records",
+        back_populates="meteo_stations")
 
     # back_populates="nearest_meteo_station_id")
 

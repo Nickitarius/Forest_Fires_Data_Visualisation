@@ -24,5 +24,6 @@ class MeteoRecord(DB):
         back_populates="meteo_records")
 
     # Many-to-Many
-    weather_events: Mapped[List["WeatherEventsMeteoRecords"]] = relationship(
-        back_populates="meteo_record")
+    weather_events: Mapped[List["WeatherEvents"]] = relationship(
+        secondary="weather_events_meteo_records",
+        back_populates="meteo_records")

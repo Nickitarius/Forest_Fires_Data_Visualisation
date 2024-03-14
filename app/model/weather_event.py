@@ -12,5 +12,6 @@ class WeatherEvent(DB):
         String(20, collation="utf8mb4_general_ci"), nullable=False)
 
     # Many-to-Many
-    meteo_records: Mapped[List["WeatherEventsMeteoRecords"]] = relationship(
-        back_populates="weather_event")
+    meteo_records: Mapped[List["MeteoRecord"]] = relationship(
+        secondary="weather_events_meteo_records",
+        back_populates="weather_events")

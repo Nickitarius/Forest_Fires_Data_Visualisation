@@ -2,7 +2,7 @@
 from model.weather_event import WeatherEvent
 from model.meteo_record import MeteoRecord
 
-from model.forest_quarters_meteo_stations import ForestQuartersMeteoStations
+# from model.forest_quarters_meteo_stations import ForestQuartersMeteoStations
 
 from model.meteo_station import MeteoStation
 from model.forest_quarter import ForestQuarter
