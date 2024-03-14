@@ -1,6 +1,6 @@
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import List
+from typing import List, Optional
 from config.db import DB
 
 
@@ -23,7 +23,7 @@ class Dacha(DB):
                             ] = relationship(back_populates="dacha")
 
     # One-to-One forest_seed_zoning_zones
-    forest_seed_zoning_zone: Mapped["ForestSeedZoningZone"] = relationship(
+    forest_seed_zoning_zone: Mapped[Optional["ForestSeedZoningZone"]] = relationship(
         back_populates="dacha")
 
     # Many-to-One forest_zones
