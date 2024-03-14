@@ -6,6 +6,7 @@ from config.db import DB
 
 
 class MeteoRecord(DB):
+    """Усреднённые погодные показатели за день. """
     __tablename__ = "meteo_records"
     id: Mapped[int] = mapped_column(primary_key=True)
     date: Mapped[datetime.date] = mapped_column(Date, nullable=False)
@@ -22,6 +23,6 @@ class MeteoRecord(DB):
     meteo_station: Mapped["MeteoStation"] = relationship(
         back_populates="meteo_records")
 
-    # Many-to-Many 
+    # Many-to-Many
     weather_events: Mapped[List["WeatherEventsMeteoRecords"]] = relationship(
         back_populates="meteo_record")
