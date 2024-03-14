@@ -19,5 +19,4 @@ session_factory = sessionmaker(bind=engine)
 def get_session_factory():
     DB.metadata.create_all(bind=engine)
     print(f'metadata: {DB.metadata.tables}')
-
     return session_factory()

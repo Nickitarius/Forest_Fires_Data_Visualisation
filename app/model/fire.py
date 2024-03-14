@@ -9,7 +9,8 @@ from config.db import DB
 class Fire(DB):
     __tablename__ = "fires"
     id: Mapped[int] = mapped_column(primary_key=True)
-    code: Mapped[str] = mapped_column(String(20), nullable=False)
+    code: Mapped[str] = mapped_column(
+        String(20, collation="utf8mb4_general_ci"), nullable=False)
     # Центр пожара
     coords: Mapped[Geometry] = mapped_column(
         Geometry('POINT'), nullable=False)

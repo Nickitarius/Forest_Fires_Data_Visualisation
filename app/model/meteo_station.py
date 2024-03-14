@@ -8,8 +8,10 @@ from geoalchemy2 import Geometry as Geometry
 class MeteoStation(DB):
     __tablename__ = "meteo_stations"
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(20), nullable=False)
-    code: Mapped[str] = mapped_column(String(20), nullable=False)
+    name: Mapped[str] = mapped_column(
+        String(20, collation="utf8mb4_general_ci"), nullable=False)
+    code: Mapped[str] = mapped_column(
+        String(20, collation="utf8mb4_general_ci"), nullable=False)
     coords: Mapped[Geometry] = mapped_column(
         Geometry('POINT'), nullable=False)
 
