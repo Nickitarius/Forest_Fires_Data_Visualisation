@@ -1,6 +1,6 @@
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import List
+from typing import List, Optional
 from geoalchemy2 import Geometry as Geometry
 from config.db import DB
 
@@ -8,11 +8,11 @@ from config.db import DB
 class MeteoStation(DB):
     __tablename__ = "meteo_stations"
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(
-        String(20, collation="utf8mb4_general_ci"), nullable=False)
+    name: Mapped[Optional[str]] = mapped_column(
+        String(20, collation="utf8mb4_general_ci"), nullable=True)
     code: Mapped[str] = mapped_column(
-        String(20, collation="utf8mb4_general_ci"), nullable=False)
-    coords: Mapped[Geometry] = mapped_column(
+        String(20, collation="utf8mb4_general_ci"), nullable=True, unique=True)
+    coords: Mapped[Optional[Geometry]] = mapped_column(
         Geometry('POINT'), nullable=False)
 
     # One-to-Many MeteoRecord
