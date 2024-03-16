@@ -8,7 +8,7 @@ class UchForestry(DB):
     __tablename__ = "uch_forestries"
     id: Mapped[int] = mapped_column(primary_key=True)
     name_en: Mapped[str] = mapped_column(
-        String(50, collation="utf8mb4_general_ci"), nullable=False)
+        String(50, collation="utf8mb4_general_ci"))
     name_ru: Mapped[str] = mapped_column(
         String(50, collation="utf8mb4_general_ci"), nullable=False)
 

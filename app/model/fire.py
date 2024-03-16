@@ -1,6 +1,6 @@
 from sqlalchemy import String, ForeignKey, Date, Boolean, Double
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import List
+from typing import Optional
 from geoalchemy2 import Geometry
 import datetime
 from config.db import DB
@@ -28,18 +28,20 @@ class Fire(DB):
     area_registr: Mapped[float] = mapped_column(Double, nullable=False)
 
     # Many-to-One forestries
-    forestry_id: Mapped[int] = mapped_column(ForeignKey("forestries.id"))
-    forestry: Mapped["Forestry"] = relationship(back_populates="fires")
+    forestry_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("forestries.id"))
+    forestry: Mapped[Optional["Forestry"]
+                     ] = relationship(back_populates="fires")
 
     # Many-to-one fire_statuses
     fire_status_id: Mapped[int] = mapped_column(ForeignKey("fire_statuses.id"))
     fire_status: Mapped["FireStatus"] = relationship(back_populates="fires")
 
-    status_change_date: Mapped[datetime.date] = mapped_column(
-        Date, nullable=False)
+    # status_change_date: Mapped[datetime.date] = mapped_column(
+    #     Date, nullable=False)
 
     # Many-to-One territory_types
-    territory_type_id: Mapped[int] = mapped_column(
+    territory_type_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("territory_types.id"))
-    territory_type: Mapped["TerritoryType"] = relationship(
+    territory_type: Mapped[Optional["TerritoryType"]] = relationship(
         back_populates="fires")

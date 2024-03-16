@@ -13,7 +13,6 @@ DB_CHARSET = "utf8mb4"
 db_url = DB_DIALECT + "+" + DB_ENGINE + "://" + DB_USERNAME + ":" + \
     DB_PASSWORD + "@" + DB_HOST + "/" + DB_NAME + "?charset=" + DB_CHARSET
 engine = create_engine(db_url, echo=False)
-session_factory = sessionmaker(bind=engine)
 
 # Many-to-Many association
 weather_events_meteo_records = Table(
@@ -38,6 +37,7 @@ forest_quarters_meteo_stations = Table(
 
 def get_session_factory():
     """Возвращает сессию БД."""
+    session_factory = sessionmaker(bind=engine)
     DB.metadata.create_all(bind=engine)
     print(f'metadata: {DB.metadata.tables}')
     return session_factory()
