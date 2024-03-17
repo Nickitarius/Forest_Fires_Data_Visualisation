@@ -1,4 +1,4 @@
-from dash import Dash, Input, Output, callback, dash_table, dcc, html
+from dash import Dash, Input, Output, callback, dash_table, dcc, html, Patch
 import dash_bootstrap_components as dbc
 import pandas as pd
 import geopandas as gpd
@@ -181,13 +181,15 @@ comb_fig.add_trace(map_roads)  # 3
 
 # Выбор подложки
 dom_select_background = dbc.Select(id="select_background",
-                                   options=[{"label": "Open Street Map", "value": map_background_options[0]},
+                                   options=[{"label": "Open Street Map",
+                                             "value": map_background_options[0]},
                                             {"label": "Positron светлый",
                                                 "value": map_background_options[1]},
-                                            {"label": "Positron тёмный", "value": map_background_options[2]},],
+                                            {"label": "Positron тёмный",
+                                             "value": map_background_options[2]},],
                                    value=map_background_options[0])
 # Выбор фоновых слоёв
-dom_backgound_layers_checklist = dbc.Checklist(id="checklist-layers",
+dom_backgound_layers_checklist = dbc.Checklist(id="checklist_layers",
                                                options=[{'label': 'Населённые пункты',
                                                          'value': 'map_loc'},
                                                         {'label': 'Дороги',
@@ -198,7 +200,7 @@ dom_backgound_layers_checklist = dbc.Checklist(id="checklist-layers",
                                                          'value': 'map_rivers'}],
                                                value=['map_loc'])
 # Настройка прозрачности слоёв
-dom_opacity_slider = dcc.Slider(id="opacity-slider",
+dom_opacity_slider = dcc.Slider(id="opacity_slider",
                                 min=0,
                                 max=100,
                                 # marks={str(i) for i in range(0, 101, 20)},
@@ -206,7 +208,8 @@ dom_opacity_slider = dcc.Slider(id="opacity-slider",
 # Карта
 dom_graph = dcc.Graph(id="map",
                       figure=comb_fig,
-                      style={"maxWidth": "70%"})
+                      style={"maxWidth": "70%"},)
+                      #responsive=True)
 
 # App
 app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -240,8 +243,8 @@ app.layout = html.Div(
             ],
             style={'padding': 10,
                    # 'flex': 1,
-                   'width': '20%',
-                   'min-width': 200}
+                   'width': '15%',
+                   'minWidth': 150}
         ),
         html.Div(className="vr"),
         dom_graph
@@ -256,13 +259,28 @@ app.layout = html.Div(
 # Callbacks
 
 
-@app.callback(
-    Output("map", "figure"),
-    Input("select_background", "value"),
-)
+@app.callback(Output("map", "figure"),
+              #   Input("map", "figure"),
+              Input("select_background", "value"),)
 def set_mapbox_background(background_name):
     """Устанавливает подложку карты. """
-    return comb_fig.update_layout(mapbox_style=background_name)
+    # print(fig.data[0])
+    # go.Figure(fig)
+    # return go.Figure(fig).update_layout(mapbox_style=background_name)
+
+    patched_fig = Patch()
+    patched_fig['layout']['mapbox']['style'] = background_name
+    return patched_fig
+
+
+# @app.callback(Output("map", "figure", allow_duplicate=True),
+#               Input("map", "figure"),
+#               Input("checklist_layers", "value"),
+#               prevent_initial_call=True)
+# def set_background_layers(layers_ids, fig):
+#     """Устанавливает фоновые слои карты. """
+#     print(layers_ids)
+#     return fig
 
 
 if __name__ == '__main__':
