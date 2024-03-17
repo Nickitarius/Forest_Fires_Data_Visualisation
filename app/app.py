@@ -63,7 +63,7 @@ sf = db_config.get_session_factory()
 
 # Map options
 map_background_options = ["carto-positron",
-                          "open-street-map", "satellite-streets"]
+                          "open-street-map", "carto-darkmatter"]
 map_options = {'map_center_start': {"lat": 52.25, "lon": 104.3},
                'map_zoom_start': 6, 'opacity': 0.15,
                'mapbox_style': map_background_options[0],
@@ -146,11 +146,11 @@ comb_fig.add_trace(map_roads)  # 3
 
 # Выбор подложки
 dom_select_background = dbc.Select(
-    id="select",
+    id="select_background",
     options=[
-        {"label": "Positron", "value": map_background_options[0]},
+        {"label": "Positron светлый", "value": map_background_options[0]},
         {"label": "Open Street Map", "value": map_background_options[1]},
-        {"label": "Спутник", "value": map_background_options[2]},
+        {"label": "Positron тёмный", "value": map_background_options[2]},
     ],
     value=map_background_options[0]
 )
@@ -174,61 +174,59 @@ dom_opacity_slider = dcc.Slider(
     id="opacity-slider",
     min=0,
     max=100,
-    marks={i: f'{i}' if (i == 1) else
-           str(i) for i in range(0, 101, 20)},
+    # marks={str(i) for i in range(0, 101, 20)},
     value=50,
 )
 
 # App
 app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
-app.layout = html.Div(id="map-app",
-                      children=[
+app.layout = html.Div(
+    id="map-app",
+    children=[
+        # html.Div(children=[
+        #     html.Label('Dropdown'),
+        #     dcc.Dropdown(['New York City', 'Montréal',
+        #                  'San Francisco'], 'Montréal'),
 
-                          # html.Div(children=[
-                          #     html.Label('Dropdown'),
-                          #     dcc.Dropdown(['New York City', 'Montréal',
-                          #                  'San Francisco'], 'Montréal'),
+        #     html.Br(),
+        #     html.Label('Multi-Select Dropdown'),
+        #     dcc.Dropdown(['New York City', 'Montréal', 'San Francisco'],
+        #                  ['Montréal', 'San Francisco'],
+        #                  multi=True),
 
-                          #     html.Br(),
-                          #     html.Label('Multi-Select Dropdown'),
-                          #     dcc.Dropdown(['New York City', 'Montréal', 'San Francisco'],
-                          #                  ['Montréal', 'San Francisco'],
-                          #                  multi=True),
-
-                          # Панель управления
-                          html.Div(id="map-control-panel",
-                                   children=[
-                                       # Слои
-                                       html.Div(children=[dbc.Label('Слои'),
-                                                          # Выбор слоёв
-                                                          dom_backgound_layers_checklist,
-                                                          html.Br(),
-                                                          dbc.Label(
-                                                              'Прозрачность.'),
-                                                          dom_opacity_slider,
-                                                          ]
-                                                ),
-                                       dom_select_background,
-                                   ],
-                                   style={'padding': 10,
-                                          # 'flex': 2
-                                          'width': '20%',
-                                          'min-width': 200}
-                                   ),
-                          dcc.Graph(id="map",
-                                    figure=comb_fig,
-                                    style={"maxWidth": "100%"}
-                                    ),
-                      ],
-                      style={"margin": 10,
-                             "maxWidth": "100%",
-                             "height": "90vh",
-                             'display': 'flex',
-                             'flexDirection': 'row'},
-                      )
-
-app.run_server(host='0.0.0.0', debug=True)
-
+        # Панель управления
+        html.Div(
+            id="map-control-panel",
+            children=[
+                # Слои
+                html.Div(
+                    children=[dbc.Label('Слои'),
+                              # Выбор слоёв
+                              dom_backgound_layers_checklist,
+                              html.Br(),
+                              dbc.Label('Прозрачность.'),
+                              dom_opacity_slider,]
+                ),
+                dbc.Label('Подложка'),
+                dom_select_background,
+            ],
+            style={'padding': 10,
+                   # 'flex': 1,
+                   'width': '20%',
+                   'min-width': 200}
+        ),
+        dcc.Graph(
+            id="map",
+            figure=comb_fig,
+            style={"maxWidth": "100%"}
+        ),
+    ],
+    style={"margin": 10,
+           "maxWidth": "100%",
+           "height": "90vh",
+           'display': 'flex',
+           'flexDirection': 'row'},
+)
 
 # Callbacks
 # @app.callback(
@@ -239,12 +237,15 @@ app.run_server(host='0.0.0.0', debug=True)
 # def generate_chart(x, y):
 #     fig = px.box(df, x=x, y=y)
 #     return fig
-# @app.callback(
-#     Input("")
-# )
 
-# Run this app with `python app.py` and
-# visit http://127.0.0.1:8050/ in your web browser.
+
+@app.callback(
+    Output("map", "figure"),
+    Input("select_background", "value"),
+)
+def set_mapbox_background(background_name):
+    """Устанавливает подложку карты. """
+    return comb_fig.update_layout(mapbox_style=background_name)
 
 # app.layout = html.Div([
 #     html.Div(children=[
@@ -283,5 +284,6 @@ app.run_server(host='0.0.0.0', debug=True)
 #     ], style={'padding': 10, 'flex': 1})
 # ], style={'display': 'flex', 'flexDirection': 'row'})
 
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8050, debug=True)
