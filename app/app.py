@@ -8,6 +8,8 @@ import plotly.express as px
 import shapely
 import shapely.geometry as geometry
 import config.db_config as db_config
+from sqlalchemy import select
+from model.fire import Fire
 
 MY_DATA_PATH = '../MY data/'
 
@@ -171,6 +173,40 @@ comb_fig.add_trace(map_rivers)  # 1
 comb_fig.add_trace(map_rail)  # 2
 comb_fig.add_trace(map_roads)  # 3
 
+
+fires = select(Fire)
+fires = sf.scalars(fires).all()
+
+fires_df = pd.DataFrame([t.__dict__ for t in fires]).drop(
+    columns={'_sa_instance_state'})
+
+lat = []
+lon = []
+for g in fires_df['coords']:
+    lat.append(shapely.from_wkb(str(g)).y)
+    lon.append(shapely.from_wkb(str(g)).x)
+
+fires_df.head()
+
+fires_df.insert(2, 'lat', lat)
+fires_df.insert(2, 'lon', lon)
+
+# geom = []
+# for g in fires_df['coords']:
+#     geom.append(shapely.from_wkb(str(g)))
+
+# fires_gpd = gpd.GeoDataFrame(fires_df, geometry=geom)
+
+map_fires = px.scatter_mapbox(fires_df, lat='lat', lon='lon',
+                              opacity=1,
+                              color_discrete_sequence=['red'],).update_traces(uid="map_fires",
+                                                                              name='Пожары',
+                                                                              showlegend=True).data[0]
+
+comb_fig.add_trace(map_fires)
+
+background_layers_dict = {'map_loc': map_loc, 'map_rivers': map_rivers,
+                          'map_roads': map_roads, 'map_rail': map_rail}
 # comb_fig.add_trace(map_loc_buf)  # 4
 # comb_fig.add_trace(map_roads_buf)  # 5
 # comb_fig.add_trace(map_rivers_buf)  # 6
@@ -189,6 +225,9 @@ dom_select_background = dbc.Select(id="select_background",
                                              "value": map_background_options[2]},],
                                    value=map_background_options[0])
 # Выбор фоновых слоёв
+background_layers_ids = ['map_loc', 'map_roads', 'map_rail', 'map_rivers']
+# background_layers = [map_loc, map_rail, map_rivers, map_roads]
+# background_layers_dict = {'map_loc': map_loc, }
 dom_backgound_layers_checklist = dbc.Checklist(id="checklist_layers",
                                                options=[{'label': 'Населённые пункты',
                                                          'value': 'map_loc'},
@@ -209,7 +248,15 @@ dom_opacity_slider = dcc.Slider(id="opacity_slider",
 dom_graph = dcc.Graph(id="map",
                       figure=comb_fig,
                       style={"maxWidth": "70%"},)
-                      #responsive=True)
+
+dom_select_main_layer = dbc.Select(id="select_main_layer",
+                                   options=[{"label": "Пожары",
+                                             "value": 'fires'},
+                                            {"label": "Риски пожаров",
+                                                "value": map_background_options[1]},
+                                            ],
+                                   value='fires')
+# responsive=True)
 
 # App
 app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -240,7 +287,10 @@ app.layout = html.Div(
                                    dom_opacity_slider,]),
                 dbc.Label('Подложка'),
                 dom_select_background,
+                dbc.Label('Слой данных'),
+                dom_select_main_layer,
             ],
+
             style={'padding': 10,
                    # 'flex': 1,
                    'width': '15%',
@@ -264,23 +314,40 @@ app.layout = html.Div(
               Input("select_background", "value"),)
 def set_mapbox_background(background_name):
     """Устанавливает подложку карты. """
-    # print(fig.data[0])
-    # go.Figure(fig)
-    # return go.Figure(fig).update_layout(mapbox_style=background_name)
-
     patched_fig = Patch()
     patched_fig['layout']['mapbox']['style'] = background_name
     return patched_fig
 
 
 # @app.callback(Output("map", "figure", allow_duplicate=True),
-#               Input("map", "figure"),
 #               Input("checklist_layers", "value"),
+#               Input("map", "figure"),
 #               prevent_initial_call=True)
 # def set_background_layers(layers_ids, fig):
 #     """Устанавливает фоновые слои карты. """
-#     print(layers_ids)
-#     return fig
+#     fig = go.Figure(fig)
+#     # print(fig)
+#     patched_fig = Patch()
+#     back_layers_existing = fig.select_traces(
+#         lambda x: x.uid in background_layers_ids)
+#     for k in background_layers_dict.keys():
+#         patched_fig.remove(background_layers_dict[k])
+
+#     for k in layers_ids:
+#         patched_fig.append(background_layers_dict[k])
+#     # for i in range(len(back_layers_existing)):
+#     #     if (back_layers_existing[i] not in layers_ids):
+#     #             for j in range( len(fig.data)):
+#     #                 if (fig.data[j].uid == back_layers_existing[i]):
+#     #                     patched_fig['data'].remove(fig.data[j])
+#     #                     break
+#     # patched_fig['data'].remove()
+#     # patched_fig['data']
+#     return patched_fig
+#     # tr = fig.select_traces(lambda x: x.uid in )
+#     # comb_fig = go.Figure()
+#     # comb_fig.add_trace()
+#     # return comb_fig
 
 
 if __name__ == '__main__':
