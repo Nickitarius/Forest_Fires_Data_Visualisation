@@ -62,7 +62,8 @@ sf = db_config.get_session_factory()
 # sf
 
 # Map options
-map_background_options = ["carto-positron", "open-street-map"]
+map_background_options = ["carto-positron",
+                          "open-street-map", "satellite-streets"]
 map_options = {'map_center_start': {"lat": 52.25, "lon": 104.3},
                'map_zoom_start': 6, 'opacity': 0.15,
                'mapbox_style': map_background_options[0],
@@ -141,6 +142,44 @@ comb_fig.add_trace(map_roads)  # 3
 
 # comb_fig.update_traces(visible=False, selector={})
 
+# DOM Elements
+
+# Выбор подложки
+dom_select_background = dbc.Select(
+    id="select",
+    options=[
+        {"label": "Positron", "value": map_background_options[0]},
+        {"label": "Open Street Map", "value": map_background_options[1]},
+        {"label": "Спутник", "value": map_background_options[2]},
+    ],
+    value=map_background_options[0]
+)
+# Выбор фоновых слоёв
+dom_backgound_layers_checklist = dbc.Checklist(
+    id="checklist-layers",
+    options=[
+        {'label': 'Населённые пункты',
+         'value': 'map_loc'},
+        {'label': 'Дороги',
+         'value': 'map_roads'},
+        {'label': 'Железные дороги',
+         'value': 'map_rail'},
+        {'label': 'Реки',
+         'value': 'map_rivers'}
+    ],
+    value=['map_loc']
+)
+# Настройка прозрачности слоёв
+dom_opacity_slider = dcc.Slider(
+    id="opacity-slider",
+    min=0,
+    max=100,
+    marks={i: f'{i}' if (i == 1) else
+           str(i) for i in range(0, 101, 20)},
+    value=50,
+)
+
+# App
 app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.layout = html.Div(id="map-app",
                       children=[
@@ -156,38 +195,20 @@ app.layout = html.Div(id="map-app",
                           #                  ['Montréal', 'San Francisco'],
                           #                  multi=True),
 
-                          #     html.Br(),
-                          #     html.Label('Radio Items'),
-                          #     dcc.RadioItems(['New York City', 'Montréal',
-                          #                    'San Francisco'], 'Montréal'),
-                          # ], style={'padding': 10, 'flex': 1}),
-
                           # Панель управления
                           html.Div(id="map-control-panel",
                                    children=[
                                        # Слои
                                        html.Div(children=[dbc.Label('Слои'),
-                                                          dbc.Checklist(id="checklist-layers",
-                                                                        options=[{'label': 'Населённые пункты', 'value': 'map_loc'},
-                                                                                 {'label': 'Дороги',
-                                                                                  'value': 'map_roads'},
-                                                                                 {'label': 'Железные дороги',
-                                                                                  'value': 'map_rail'},
-                                                                                 {'label': 'Реки',
-                                                                                  'value': 'map_rivers'}]
-                                                                        ),
+                                                          # Выбор слоёв
+                                                          dom_backgound_layers_checklist,
                                                           html.Br(),
                                                           dbc.Label(
                                                               'Прозрачность.'),
-                                                          dcc.Slider(id="opacity-slider",
-                                                                     min=0,
-                                                                     max=100,
-                                                                     marks={i: f'Label {i}' if i == 1 else str(
-                                                                         i) for i in range(0, 101, 20)},
-                                                                     value=50,
-                                                                     ),
+                                                          dom_opacity_slider,
                                                           ]
                                                 ),
+                                       dom_select_background,
                                    ],
                                    style={'padding': 10,
                                           # 'flex': 2
@@ -195,15 +216,32 @@ app.layout = html.Div(id="map-app",
                                           'min-width': 200}
                                    ),
                           dcc.Graph(id="map",
-                                    figure=comb_fig,),
+                                    figure=comb_fig,
+                                    style={"maxWidth": "100%"}
+                                    ),
                       ],
-                      style={"margin": 10,  # "maxWidth": "100%", "height": "90vh",
+                      style={"margin": 10,
+                             "maxWidth": "100%",
+                             "height": "90vh",
                              'display': 'flex',
                              'flexDirection': 'row'},
                       )
 
 app.run_server(host='0.0.0.0', debug=True)
 
+
+# Callbacks
+# @app.callback(
+#     Output("graph", "figure"),
+#     Input("x-axis", "value"),
+#     Input("y-axis", "value"),
+# )
+# def generate_chart(x, y):
+#     fig = px.box(df, x=x, y=y)
+#     return fig
+# @app.callback(
+#     Input("")
+# )
 
 # Run this app with `python app.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
