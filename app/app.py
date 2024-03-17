@@ -141,11 +141,109 @@ comb_fig.add_trace(map_roads)  # 3
 
 # comb_fig.update_traces(visible=False, selector={})
 
-app = Dash()
-app.layout = html.Div([
-    dcc.Graph(id="map", figure=comb_fig,)
-],
-    style={"margin": 10, "maxWidth": "100%", "height": "90vh"}
-)
+app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
+app.layout = html.Div(id="map-app",
+                      children=[
+
+                          # html.Div(children=[
+                          #     html.Label('Dropdown'),
+                          #     dcc.Dropdown(['New York City', 'Montréal',
+                          #                  'San Francisco'], 'Montréal'),
+
+                          #     html.Br(),
+                          #     html.Label('Multi-Select Dropdown'),
+                          #     dcc.Dropdown(['New York City', 'Montréal', 'San Francisco'],
+                          #                  ['Montréal', 'San Francisco'],
+                          #                  multi=True),
+
+                          #     html.Br(),
+                          #     html.Label('Radio Items'),
+                          #     dcc.RadioItems(['New York City', 'Montréal',
+                          #                    'San Francisco'], 'Montréal'),
+                          # ], style={'padding': 10, 'flex': 1}),
+
+                          # Панель управления
+                          html.Div(id="map-control-panel",
+                                   children=[
+                                       # Слои
+                                       html.Div(children=[dbc.Label('Слои'),
+                                                          dbc.Checklist(id="checklist-layers",
+                                                                        options=[{'label': 'Населённые пункты', 'value': 'map_loc'},
+                                                                                 {'label': 'Дороги',
+                                                                                  'value': 'map_roads'},
+                                                                                 {'label': 'Железные дороги',
+                                                                                  'value': 'map_rail'},
+                                                                                 {'label': 'Реки',
+                                                                                  'value': 'map_rivers'}]
+                                                                        ),
+                                                          html.Br(),
+                                                          dbc.Label(
+                                                              'Прозрачность.'),
+                                                          dcc.Slider(id="opacity-slider",
+                                                                     min=0,
+                                                                     max=100,
+                                                                     marks={i: f'Label {i}' if i == 1 else str(
+                                                                         i) for i in range(0, 101, 20)},
+                                                                     value=50,
+                                                                     ),
+                                                          ]
+                                                ),
+                                   ],
+                                   style={'padding': 10,
+                                          # 'flex': 2
+                                          'width': '20%',
+                                          'min-width': 200}
+                                   ),
+                          dcc.Graph(id="map",
+                                    figure=comb_fig,),
+                      ],
+                      style={"margin": 10,  # "maxWidth": "100%", "height": "90vh",
+                             'display': 'flex',
+                             'flexDirection': 'row'},
+                      )
 
 app.run_server(host='0.0.0.0', debug=True)
+
+
+# Run this app with `python app.py` and
+# visit http://127.0.0.1:8050/ in your web browser.
+
+# app.layout = html.Div([
+#     html.Div(children=[
+#         html.Label('Dropdown'),
+#         dcc.Dropdown(['New York City', 'Montréal', 'San Francisco'], 'Montréal'),
+
+#         html.Br(),
+#         html.Label('Multi-Select Dropdown'),
+#         dcc.Dropdown(['New York City', 'Montréal', 'San Francisco'],
+#                      ['Montréal', 'San Francisco'],
+#                      multi=True),
+
+#         html.Br(),
+#         html.Label('Radio Items'),
+#         dcc.RadioItems(['New York City', 'Montréal', 'San Francisco'], 'Montréal'),
+#     ], style={'padding': 10, 'flex': 1}),
+
+#     html.Div(children=[
+#         html.Label('Checkboxes'),
+#         dcc.Checklist(['New York City', 'Montréal', 'San Francisco'],
+#                       ['Montréal', 'San Francisco']
+#         ),
+
+#         html.Br(),
+#         html.Label('Text Input'),
+#         dcc.Input(value='MTL', type='text'),
+
+#         html.Br(),
+#         html.Label('Slider'),
+#         dcc.Slider(
+#             min=0,
+#             max=9,
+#             marks={i: f'Label {i}' if i == 1 else str(i) for i in range(1, 6)},
+#             value=5,
+#         ),
+#     ], style={'padding': 10, 'flex': 1})
+# ], style={'display': 'flex', 'flexDirection': 'row'})
+
+if __name__ == '__main__':
+    app.run(debug=True)
