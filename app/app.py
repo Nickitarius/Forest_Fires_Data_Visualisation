@@ -80,31 +80,42 @@ map_loc = px.choropleth_mapbox(df_loc, geojson=df_loc.geometry, locations=df_loc
                                hover_name='name',
                                hover_data=['type'],
                                color_discrete_sequence=['yellow']
-                               ).update_traces(name="map_loc",)
-map_loc.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0}, width=1900,
-                      height=800)
+                               ).update_traces(uid="map_loc", name='Населённые пункты')
+map_loc.update_layout(
+    margin={"r": 2, "t": 0, "l": 2, "b": 0},
+    width=1500,
+    height=800,
+    legend=dict(
+        yanchor="top",
+        y=0.95,
+        xanchor="left",
+        x=0.95
+    )
+)
 
 df_rail = load_geo_from_geojson("geodata/zhd_roads.geojson")
 lats, lons = get_coords_linestring(df_rail)
 map_rail = px.line_mapbox(df_rail, lat=lats, lon=lons,
                           color_discrete_sequence=['black'],
-                          ).update_traces(name="map_rail",
-                                          hovertemplate=None, hoverinfo='skip',).data[0]
+                          ).update_traces(name="Железные дороги",
+                                          hovertemplate=None,
+                                          hoverinfo='skip',
+                                          uid='map_rail'
+                                          ).data[0]
 
 df_rivers = load_geo_from_geojson("geodata/rivers.geojson")
 lats, lons = get_coords_linestring(df_rivers)
 map_rivers = px.line_mapbox(df_rivers, lat=lats, lon=lons,
                             color_discrete_sequence=['blue'],
-                            ).update_traces(name="map_rivers", line={'width': 1},
+                            ).update_traces(uid="map_rivers", name='Реки', line={'width': 1},
                                             hovertemplate=None, hoverinfo='skip',).data[0]
 
 df_roads = load_geo_from_geojson("geodata/auto_roads.geojson")
 lats, lons = get_coords_linestring(df_roads)
 map_roads = px.line_mapbox(df_roads, lat=lats, lon=lons,
                            color_discrete_sequence=['orange'],
-                           ).update_traces(name="map_roads", line={'width': 2},
-                                           hovertemplate=None, hoverinfo='skip',).data[0]
-
+                           ).update_traces(name="Дороги", line={'width': 2},
+                                           hovertemplate=None, hoverinfo='skip', uid='map_roads').data[0]
 
 df_loc_buf = load_geo_from_json("MY buffers/localities_buffers.json")
 map_loc_buf = px.choropleth_mapbox(df_loc_buf, geojson=df_loc_buf.geometry,
@@ -112,7 +123,7 @@ map_loc_buf = px.choropleth_mapbox(df_loc_buf, geojson=df_loc_buf.geometry,
                                    opacity=0.5,
                                    labels={'type': 'Тип'},
                                    color_discrete_sequence=['orange'],
-                                   ).update_traces(name="map_loc_buf", visible=False).data[0]
+                                   ).update_traces(uid="map_loc_buf", visible=False).data[0]
 
 
 df_road_buf = load_geo_from_json("MY buffers/roads_buffers.json")
@@ -121,7 +132,7 @@ map_roads_buf = px.choropleth_mapbox(df_road_buf, geojson=df_road_buf.geometry,
                                      opacity=0.5,
                                      labels={'type': 'Тип'},
                                      color_discrete_sequence=['yellow'],
-                                     ).update_traces(name="map_roads_buf", visible=False).data[0]
+                                     ).update_traces(uid="map_roads_buf", visible=False).data[0]
 
 df_rivers_buf = load_geo_from_json("MY buffers/rivers_buffers.json")
 map_rivers_buf = px.choropleth_mapbox(df_rivers_buf, geojson=df_rivers_buf.geometry,
@@ -129,7 +140,7 @@ map_rivers_buf = px.choropleth_mapbox(df_rivers_buf, geojson=df_rivers_buf.geome
                                       opacity=0.5,
                                       labels={'type': 'Тип'},
                                       color_discrete_sequence=['yellow'],
-                                      ).update_traces(name="map_rivers_buf", visible=False).data[0]
+                                      ).update_traces(uid="map_rivers_buf", visible=False).data[0]
 
 comb_fig = go.Figure(map_loc)  # 0
 comb_fig.add_trace(map_rivers)  # 1
@@ -177,6 +188,12 @@ dom_opacity_slider = dcc.Slider(
     # marks={str(i) for i in range(0, 101, 20)},
     value=50,
 )
+# Карта
+dom_graph = dcc.Graph(
+    id="map",
+    figure=comb_fig,
+    style={"maxWidth": "70%"}
+)
 
 # App
 app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -215,11 +232,8 @@ app.layout = html.Div(
                    'width': '20%',
                    'min-width': 200}
         ),
-        dcc.Graph(
-            id="map",
-            figure=comb_fig,
-            style={"maxWidth": "100%"}
-        ),
+        html.Div(className="vr"),
+        dom_graph
     ],
     style={"margin": 10,
            "maxWidth": "100%",
