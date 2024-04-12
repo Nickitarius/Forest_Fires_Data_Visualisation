@@ -131,41 +131,38 @@ def create_map_roads_trace():
 
 
 map_loc = create_map_loc_trace()
-map_rivers = create_map_rivers_trace()
-map_roads = create_map_rivers_trace()
-map_rail = create_map_rail_trace()
 
-df_loc_buf = load_geo_from_json("MY buffers/localities_buffers.json")
-map_loc_buf = px.choropleth_mapbox(df_loc_buf,
-                                   geojson=df_loc_buf.geometry,
-                                   locations=df_loc_buf.index,
-                                   opacity=0.5,
-                                   labels={'type': 'Тип'},
-                                   color_discrete_sequence=['orange'],
-                                   ).update_traces(uid="map_loc_buf",
-                                                   visible=False).data[0]
+# df_loc_buf = load_geo_from_json("MY buffers/localities_buffers.json")
+# map_loc_buf = px.choropleth_mapbox(df_loc_buf,
+#                                    geojson=df_loc_buf.geometry,
+#                                    locations=df_loc_buf.index,
+#                                    opacity=0.5,
+#                                    labels={'type': 'Тип'},
+#                                    color_discrete_sequence=['orange'],
+#                                    ).update_traces(uid="map_loc_buf",
+#                                                    visible=False).data[0]
 
 
-df_road_buf = load_geo_from_json("MY buffers/roads_buffers.json")
-map_roads_buf = px.choropleth_mapbox(df_road_buf,
-                                     geojson=df_road_buf.geometry,
-                                     locations=df_road_buf.index,
-                                     opacity=0.5,
-                                     labels={'type': 'Тип'},
-                                     color_discrete_sequence=['yellow'],
-                                     ).update_traces(uid="map_roads_buf",
-                                                     visible=False).data[0]
+# df_road_buf = load_geo_from_json("MY buffers/roads_buffers.json")
+# map_roads_buf = px.choropleth_mapbox(df_road_buf,
+#                                      geojson=df_road_buf.geometry,
+#                                      locations=df_road_buf.index,
+#                                      opacity=0.5,
+#                                      labels={'type': 'Тип'},
+#                                      color_discrete_sequence=['yellow'],
+#                                      ).update_traces(uid="map_roads_buf",
+#                                                      visible=False).data[0]
 
-df_rivers_buf = load_geo_from_json("MY buffers/rivers_buffers.json")
-map_rivers_buf = px.choropleth_mapbox(df_rivers_buf,
-                                      geojson=df_rivers_buf.geometry,
-                                      locations=df_rivers_buf.index,
-                                      opacity=0.5,
-                                      labels={'type': 'Тип'},
-                                      color_discrete_sequence=['yellow']
-                                      ).update_traces(uid="map_rivers_buf",
-                                                      visible=False,
-                                                      showlegend=True).data[0]
+# df_rivers_buf = load_geo_from_json("MY buffers/rivers_buffers.json")
+# map_rivers_buf = px.choropleth_mapbox(df_rivers_buf,
+#                                       geojson=df_rivers_buf.geometry,
+#                                       locations=df_rivers_buf.index,
+#                                       opacity=0.5,
+#                                       labels={'type': 'Тип'},
+#                                       color_discrete_sequence=['yellow']
+#                                       ).update_traces(uid="map_rivers_buf",
+#                                                       visible=False,
+#                                                       showlegend=True).data[0]
 
 comb_fig = go.Figure(map_loc)
 comb_fig.update_layout(
@@ -181,10 +178,6 @@ comb_fig.update_layout(
     mapbox=dict(center=map_options['map_center_start'],
                 zoom=map_options['map_zoom_start'])
 )
-
-comb_fig.add_trace(map_rivers)
-comb_fig.add_trace(map_rail)
-comb_fig.add_trace(map_roads)
 
 fires = select(Fire)
 fires = sf.scalars(fires).all()
@@ -309,7 +302,6 @@ app.layout = html.Div(
 
 
 @app.callback(Output("map", "figure"),
-              #   Input("map", "figure"),
               Input("select_background", "value"),)
 def set_mapbox_background(background_name):
     """Устанавливает подложку карты. """
@@ -327,12 +319,8 @@ def set_background_layers(layers_ids, fig):
     patched_fig = Patch()
     # back_layers_existing = fig.select_traces(
     #     lambda x: x.uid in background_layers_ids)
-    for item in fig['data']:
-        print(type(item))
-
     for l in background_layers_ids:
         g = [item for item in fig['data'] if item['uid'] == l]
-
         if (l in layers_ids):
             if len(g) == 0:
                 match l:
@@ -344,8 +332,6 @@ def set_background_layers(layers_ids, fig):
                         patched_fig['data'].append(create_map_rail_trace())
                     case "map_loc":
                         patched_fig['data'].append(create_map_loc_trace())
-
-                # patched_fig.append(g[0])
         elif len(g) > 0:
             # del patched_fig['data'][g[0]]
             patched_fig['data'].remove(g[0])
