@@ -86,21 +86,23 @@ map_loc = px.choropleth_mapbox(df_loc,
                                color_discrete_sequence=['yellow']
                                ).update_traces(uid="map_loc",
                                                name='Населённые пункты')
-map_loc.update_layout(
-    margin={"r": 5, "t": 0, "l": 5, "b": 0},
-    width=1500,
-    height=800,
-    legend=dict(
-        yanchor="top",
-        y=0.95,
-        xanchor="left",
-        x=0.85
-    )
-)
+# map_loc.update_layout(
+#     margin={"r": 5, "t": 0, "l": 5, "b": 0},
+#     width=1500,
+#     height=800,
+#     legend=dict(
+#         yanchor="top",
+#         y=0.95,
+#         xanchor="left",
+#         x=0.85
+#     )
+# )
 
-df_rail = load_geo_from_geojson("geodata/zhd_roads.geojson")
-lats, lons = get_coords_linestring(df_rail)
-map_rail = px.line_mapbox(df_rail,
+
+def create_map_rail_trace():
+    df_rail = load_geo_from_geojson("geodata/zhd_roads.geojson")
+    lats, lons = get_coords_linestring(df_rail)
+    return px.line_mapbox(df_rail,
                           lat=lats,
                           lon=lons,
                           color_discrete_sequence=['black'],
@@ -111,31 +113,40 @@ map_rail = px.line_mapbox(df_rail,
                                           showlegend=True
                                           ).data[0]
 
-df_rivers = load_geo_from_geojson("geodata/rivers.geojson")
-lats, lons = get_coords_linestring(df_rivers)
-map_rivers = px.line_mapbox(df_rivers,
-                            lat=lats,
-                            lon=lons,
-                            color_discrete_sequence=['blue'],
-                            ).update_traces(uid="map_rivers",
-                                            name='Реки',
-                                            line={'width': 1},
-                                            hovertemplate=None,
-                                            hoverinfo='skip',
-                                            showlegend=True).data[0]
 
-df_roads = load_geo_from_geojson("geodata/auto_roads.geojson")
-lats, lons = get_coords_linestring(df_roads)
-map_roads = px.line_mapbox(df_roads,
-                           lat=lats,
-                           lon=lons,
-                           color_discrete_sequence=['orange'],
-                           ).update_traces(name="Дороги",
-                                           line={'width': 2},
-                                           hovertemplate=None,
-                                           hoverinfo='skip',
-                                           uid='map_roads',
-                                           showlegend=True).data[0]
+def create_map_rivers_trace():
+    df_rivers = load_geo_from_geojson("geodata/rivers.geojson")
+    lats, lons = get_coords_linestring(df_rivers)
+    return px.line_mapbox(df_rivers,
+                          lat=lats,
+                          lon=lons,
+                          color_discrete_sequence=['blue'],
+                          ).update_traces(uid="map_rivers",
+                                          name='Реки',
+                                          line={'width': 1},
+                                          hovertemplate=None,
+                                          hoverinfo='skip',
+                                          showlegend=True).data[0]
+
+
+def create_map_roads_trace():
+    df_roads = load_geo_from_geojson("geodata/auto_roads.geojson")
+    lats, lons = get_coords_linestring(df_roads)
+    return px.line_mapbox(df_roads,
+                          lat=lats,
+                          lon=lons,
+                          color_discrete_sequence=['orange'],
+                          ).update_traces(name="Дороги",
+                                               line={'width': 2},
+                                               hovertemplate=None,
+                                               hoverinfo='skip',
+                                               uid='map_roads',
+                                               showlegend=True).data[0]
+
+
+map_rivers = create_map_rivers_trace()
+map_roads = create_map_rivers_trace()
+map_rail = create_map_rail_trace()
 
 df_loc_buf = load_geo_from_json("MY buffers/localities_buffers.json")
 map_loc_buf = px.choropleth_mapbox(df_loc_buf,
@@ -169,6 +180,18 @@ map_rivers_buf = px.choropleth_mapbox(df_rivers_buf,
                                                                                          showlegend=True).data[0]
 
 comb_fig = go.Figure(map_loc)  # 0
+comb_fig.update_layout(
+    margin={"r": 5, "t": 0, "l": 5, "b": 0},
+    width=1500,
+    height=800,
+    legend=dict(
+        yanchor="top",
+        y=0.95,
+        xanchor="left",
+        x=0.85
+    )
+)
+
 comb_fig.add_trace(map_rivers)  # 1
 comb_fig.add_trace(map_rail)  # 2
 comb_fig.add_trace(map_roads)  # 3
@@ -237,7 +260,14 @@ dom_backgound_layers_checklist = dbc.Checklist(id="checklist_layers",
                                                          'value': 'map_rail'},
                                                         {'label': 'Реки',
                                                          'value': 'map_rivers'}],
-                                               value=['map_loc'])
+                                               value=['map_loc'],
+                                               switch=True)
+
+
+# html.Div(id="layers_checkboxes_div",
+#          children=[
+#              dbc.Checkbox(id='')])
+
 # Настройка прозрачности слоёв
 dom_opacity_slider = dcc.Slider(id="opacity_slider",
                                 min=0,
@@ -263,28 +293,17 @@ app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.layout = html.Div(
     id="map-app",
     children=[
-        # html.Div(children=[
-        #     html.Label('Dropdown'),
-        #     dcc.Dropdown(['New York City', 'Montréal',
-        #                  'San Francisco'], 'Montréal'),
-
-        #     html.Br(),
-        #     html.Label('Multi-Select Dropdown'),
-        #     dcc.Dropdown(['New York City', 'Montréal', 'San Francisco'],
-        #                  ['Montréal', 'San Francisco'],
-        #                  multi=True),
-
         # Панель управления
         html.Div(
             id="map-control-panel",
             children=[
                 # Слои
-                html.Div(children=[dbc.Label('Слои'),
-                                   # Выбор слоёв
-                                   dom_backgound_layers_checklist,
-                                   html.Br(),
-                                   dbc.Label('Прозрачность.'),
-                                   dom_opacity_slider,]),
+                html.Div(children=[  # dbc.Label('Слои'),
+                    # Выбор слоёв
+                    dom_backgound_layers_checklist,
+                    html.Br(),
+                    dbc.Label('Прозрачность.'),
+                    dom_opacity_slider,]),
                 dbc.Label('Подложка'),
                 dom_select_background,
                 dbc.Label('Слой данных'),
@@ -319,35 +338,63 @@ def set_mapbox_background(background_name):
     return patched_fig
 
 
-# @app.callback(Output("map", "figure", allow_duplicate=True),
-#               Input("checklist_layers", "value"),
-#               Input("map", "figure"),
-#               prevent_initial_call=True)
-# def set_background_layers(layers_ids, fig):
-#     """Устанавливает фоновые слои карты. """
-#     fig = go.Figure(fig)
-#     # print(fig)
-#     patched_fig = Patch()
-#     back_layers_existing = fig.select_traces(
-#         lambda x: x.uid in background_layers_ids)
-#     for k in background_layers_dict.keys():
-#         patched_fig.remove(background_layers_dict[k])
+@app.callback(Output("map", "figure", allow_duplicate=True),
+              Input("checklist_layers", "value"),
+              Input("map", "figure"),
+              prevent_initial_call=True)
+def set_background_layers(layers_ids, fig):
+    """Устанавливает фоновые слои карты. """
+    # fig = go.Figure(fig)
+    # print(layers_ids)
+    # print(fig.data)
+    patched_fig = Patch()
+    # back_layers_existing = fig.select_traces(
+    #     lambda x: x.uid in background_layers_ids)
+    print(type(fig['data']))
+    for item in fig['data']:
+        print(type(item))
 
-#     for k in layers_ids:
-#         patched_fig.append(background_layers_dict[k])
-#     # for i in range(len(back_layers_existing)):
-#     #     if (back_layers_existing[i] not in layers_ids):
-#     #             for j in range( len(fig.data)):
-#     #                 if (fig.data[j].uid == back_layers_existing[i]):
-#     #                     patched_fig['data'].remove(fig.data[j])
-#     #                     break
-#     # patched_fig['data'].remove()
-#     # patched_fig['data']
-#     return patched_fig
-#     # tr = fig.select_traces(lambda x: x.uid in )
-#     # comb_fig = go.Figure()
-#     # comb_fig.add_trace()
-#     # return comb_fig
+    print(patched_fig)
+    for l in background_layers_ids:
+        # g = fig['data'].select_traces(selector={'uid': l}).__next__()
+        g = [item for item in fig['data'] if item['uid'] == l]
+
+        if (l in layers_ids):
+            if len(g) == 0:
+                match l:
+                    case "map_rivers":
+                        patched_fig['data'].append(create_map_rivers_trace)
+                    case "map_roads":
+                        patched_fig['data'].append(create_map_roads_trace)
+                    case "map_rail":
+                        patched_fig['data'].append(create_map_rail_trace)
+                # patched_fig.append(g[0])
+        elif len(g) > 0:
+            # del patched_fig['data'][g[0]]
+            patched_fig['data'].remove(g[0])
+            # patched_fig.
+
+    # for k in layers_ids:
+    # patched_fig.remove(background_layers_dict[k])
+
+    # del patched_fig['data'][background_layers_dict[k]]
+
+    # for k in layers_ids:
+    #     patched_fig.append(background_layers_dict[k])
+    # for i in range(len(back_layers_existing)):
+    #     if (back_layers_existing[i] not in layers_ids):
+    #             for j in range( len(fig.data)):
+    #                 if (fig.data[j].uid == back_layers_existing[i]):
+    #                     patched_fig['data'].remove(fig.data[j])
+    #                     break
+    # patched_fig['data'].remove()
+    # patched_fig['data']
+
+    # print(patched_fig.data)
+
+    # print(patched_fig)
+
+    return patched_fig
 
 
 if __name__ == '__main__':
