@@ -72,31 +72,21 @@ map_options = {'map_center_start': {"lat": 52.25, "lon": 104.3},
                'width': 1500, 'height': 800}
 
 
-df_loc = load_geo_from_geojson("geodata/localities_Irk_obl.geojson")
-map_loc = px.choropleth_mapbox(df_loc,
-                               geojson=df_loc.geometry,
-                               locations=df_loc.index,
-                               mapbox_style=map_options['mapbox_style'],
-                               opacity=map_options['opacity'],
-                               center=map_options['map_center_start'],
-                               zoom=map_options['map_zoom_start'],
-                               labels={'type': 'Тип'},
-                               hover_name='name',
-                               hover_data=['type'],
-                               color_discrete_sequence=['yellow']
-                               ).update_traces(uid="map_loc",
-                                               name='Населённые пункты')
-# map_loc.update_layout(
-#     margin={"r": 5, "t": 0, "l": 5, "b": 0},
-#     width=1500,
-#     height=800,
-#     legend=dict(
-#         yanchor="top",
-#         y=0.95,
-#         xanchor="left",
-#         x=0.85
-#     )
-# )
+def create_map_loc_trace():
+    df_loc = load_geo_from_geojson("geodata/localities_Irk_obl.geojson")
+    return px.choropleth_mapbox(df_loc,
+                                geojson=df_loc.geometry,
+                                locations=df_loc.index,
+                                mapbox_style=map_options['mapbox_style'],
+                                opacity=map_options['opacity'],
+                                center=map_options['map_center_start'],
+                                zoom=map_options['map_zoom_start'],
+                                labels={'type': 'Тип'},
+                                hover_name='name',
+                                hover_data=['type'],
+                                color_discrete_sequence=['yellow']
+                                ).update_traces(uid="map_loc",
+                                                name='Населённые пункты').data[0]
 
 
 def create_map_rail_trace():
@@ -144,6 +134,7 @@ def create_map_roads_trace():
                                                showlegend=True).data[0]
 
 
+map_loc = create_map_loc_trace()
 map_rivers = create_map_rivers_trace()
 map_roads = create_map_rivers_trace()
 map_rail = create_map_rail_trace()
@@ -344,55 +335,32 @@ def set_mapbox_background(background_name):
               prevent_initial_call=True)
 def set_background_layers(layers_ids, fig):
     """Устанавливает фоновые слои карты. """
-    # fig = go.Figure(fig)
-    # print(layers_ids)
-    # print(fig.data)
     patched_fig = Patch()
     # back_layers_existing = fig.select_traces(
     #     lambda x: x.uid in background_layers_ids)
-    print(type(fig['data']))
     for item in fig['data']:
         print(type(item))
 
-    print(patched_fig)
     for l in background_layers_ids:
-        # g = fig['data'].select_traces(selector={'uid': l}).__next__()
         g = [item for item in fig['data'] if item['uid'] == l]
 
         if (l in layers_ids):
             if len(g) == 0:
                 match l:
                     case "map_rivers":
-                        patched_fig['data'].append(create_map_rivers_trace)
+                        patched_fig['data'].append(create_map_rivers_trace())
                     case "map_roads":
-                        patched_fig['data'].append(create_map_roads_trace)
+                        patched_fig['data'].append(create_map_roads_trace())
                     case "map_rail":
-                        patched_fig['data'].append(create_map_rail_trace)
+                        patched_fig['data'].append(create_map_rail_trace())
+                    case "map_loc":
+                        patched_fig['data'].append(create_map_loc_trace())
+
                 # patched_fig.append(g[0])
         elif len(g) > 0:
             # del patched_fig['data'][g[0]]
+            print(g[0])
             patched_fig['data'].remove(g[0])
-            # patched_fig.
-
-    # for k in layers_ids:
-    # patched_fig.remove(background_layers_dict[k])
-
-    # del patched_fig['data'][background_layers_dict[k]]
-
-    # for k in layers_ids:
-    #     patched_fig.append(background_layers_dict[k])
-    # for i in range(len(back_layers_existing)):
-    #     if (back_layers_existing[i] not in layers_ids):
-    #             for j in range( len(fig.data)):
-    #                 if (fig.data[j].uid == back_layers_existing[i]):
-    #                     patched_fig['data'].remove(fig.data[j])
-    #                     break
-    # patched_fig['data'].remove()
-    # patched_fig['data']
-
-    # print(patched_fig.data)
-
-    # print(patched_fig)
 
     return patched_fig
 
