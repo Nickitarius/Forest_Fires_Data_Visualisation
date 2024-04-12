@@ -61,14 +61,13 @@ def load_geo_from_json(file_name):
 
 
 sf = db_config.get_session_factory()
-# sf
 
 # Map options
 map_background_options = ["open-street-map",
                           "carto-positron", "carto-darkmatter"]
 map_options = {'map_center_start': {"lat": 52.25, "lon": 104.3},
                'map_zoom_start': 6, 'opacity': 0.25,
-               'mapbox_style': map_background_options[0],
+               'mapbox_style': map_background_options[1],
                'width': 1500, 'height': 800}
 
 
@@ -77,7 +76,6 @@ def create_map_loc_trace():
     return px.choropleth_mapbox(df_loc,
                                 geojson=df_loc.geometry,
                                 locations=df_loc.index,
-                                mapbox_style=map_options['mapbox_style'],
                                 opacity=map_options['opacity'],
                                 labels={'type': 'Тип'},
                                 hover_name='name',
@@ -170,8 +168,6 @@ map_rivers_buf = px.choropleth_mapbox(df_rivers_buf,
                                                       showlegend=True).data[0]
 
 comb_fig = go.Figure(map_loc)
-# comb_fig.update_geos()
-# )
 comb_fig.update_layout(
     margin={"r": 5, "t": 0, "l": 5, "b": 0},
     width=1500,
@@ -237,7 +233,7 @@ dom_select_background = dbc.Select(id="select_background",
                                                 "value": map_background_options[1]},
                                             {"label": "Positron тёмный",
                                              "value": map_background_options[2]},],
-                                   value=map_background_options[0])
+                                   value=map_options['mapbox_style'])
 # Выбор фоновых слоёв
 background_layers_ids = ['map_loc', 'map_roads', 'map_rail', 'map_rivers']
 dom_backgound_layers_checklist = dbc.Checklist(id="checklist_layers",
