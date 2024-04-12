@@ -2,11 +2,11 @@ from dash import Dash, Input, Output, callback, dash_table, dcc, html, Patch
 import dash_bootstrap_components as dbc
 import pandas as pd
 import geopandas as gpd
-import plotly
+# import plotly
 import plotly.graph_objects as go
 import plotly.express as px
 import shapely
-import shapely.geometry as geometry
+# import shapely.geometry as geometry
 import config.db_config as db_config
 from sqlalchemy import select
 from model.fire import Fire
@@ -179,35 +179,40 @@ comb_fig.update_layout(
                 zoom=map_options['map_zoom_start'])
 )
 
-fires = select(Fire)
-fires = sf.scalars(fires).all()
 
-fires_df = pd.DataFrame([t.__dict__ for t in fires]).drop(
-    columns={'_sa_instance_state'})
+def create_fires_df():
+    fires = select(Fire)
+    fires = sf.scalars(fires).all()
 
-lat = []
-lon = []
-for g in fires_df['coords']:
-    lat.append(shapely.from_wkb(str(g)).y)
-    lon.append(shapely.from_wkb(str(g)).x)
+    fires_df = pd.DataFrame([t.__dict__ for t in fires]
+                            ).drop(columns={'_sa_instance_state'})
 
-fires_df.head()
+    lat = []
+    lon = []
+    for g in fires_df['coords']:
+        lat.append(shapely.from_wkb(str(g)).y)
+        lon.append(shapely.from_wkb(str(g)).x)
 
-fires_df.insert(2, 'lat', lat)
-fires_df.insert(2, 'lon', lon)
+    fires_df.insert(2, 'lat', lat)
+    fires_df.insert(2, 'lon', lon)
 
-# geom = []
-# for g in fires_df['coords']:
-#     geom.append(shapely.from_wkb(str(g)))
+    # geom = []
+    # for g in fires_df['coords']:
+    #     geom.append(shapely.from_wkb(str(g)))
 
-# fires_gpd = gpd.GeoDataFrame(fires_df, geometry=geom)
+    # fires_gpd = gpd.GeoDataFrame(fires_df, geometry=geom)
 
-map_fires = px.scatter_mapbox(fires_df, lat='lat', lon='lon',
-                              opacity=1,
-                              color_discrete_sequence=['red'],).update_traces(uid="map_fires",
-                                                                              name='Пожары',
-                                                                              showlegend=True).data[0]
+    return px.scatter_mapbox(fires_df,
+                             lat='lat',
+                             lon='lon',
+                             opacity=1,
+                             color_discrete_sequence=['red']
+                             ).update_traces(uid="map_fires",
+                                             name='Пожары',
+                                             showlegend=True).data[0]
 
+
+map_fires = create_fires_df()
 comb_fig.add_trace(map_fires)
 
 # comb_fig.add_trace(map_loc_buf)
@@ -261,7 +266,7 @@ dom_select_main_layer = dbc.Select(id="select_main_layer",
                                    value='fires')
 # responsive=True)
 
-# App
+# HTML app
 app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.layout = html.Div(
     id="map-app",
@@ -321,8 +326,8 @@ def set_background_layers(layers_ids, fig):
     #     lambda x: x.uid in background_layers_ids)
     for l in background_layers_ids:
         g = [item for item in fig['data'] if item['uid'] == l]
-        if (l in layers_ids):
-            if len(g) == 0:
+        if len(g) == 0:
+            if (l in layers_ids):
                 match l:
                     case "map_rivers":
                         patched_fig['data'].append(create_map_rivers_trace())
@@ -332,8 +337,7 @@ def set_background_layers(layers_ids, fig):
                         patched_fig['data'].append(create_map_rail_trace())
                     case "map_loc":
                         patched_fig['data'].append(create_map_loc_trace())
-        elif len(g) > 0:
-            # del patched_fig['data'][g[0]]
+        else:
             patched_fig['data'].remove(g[0])
 
     return patched_fig
