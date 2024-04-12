@@ -79,8 +79,6 @@ def create_map_loc_trace():
                                 locations=df_loc.index,
                                 mapbox_style=map_options['mapbox_style'],
                                 opacity=map_options['opacity'],
-                                center=map_options['map_center_start'],
-                                zoom=map_options['map_zoom_start'],
                                 labels={'type': 'Тип'},
                                 hover_name='name',
                                 hover_data=['type'],
@@ -166,11 +164,14 @@ map_rivers_buf = px.choropleth_mapbox(df_rivers_buf,
                                       locations=df_rivers_buf.index,
                                       opacity=0.5,
                                       labels={'type': 'Тип'},
-                                      color_discrete_sequence=['yellow'],).update_traces(uid="map_rivers_buf",
-                                                                                         visible=False,
-                                                                                         showlegend=True).data[0]
+                                      color_discrete_sequence=['yellow']
+                                      ).update_traces(uid="map_rivers_buf",
+                                                      visible=False,
+                                                      showlegend=True).data[0]
 
-comb_fig = go.Figure(map_loc)  # 0
+comb_fig = go.Figure(map_loc)
+# comb_fig.update_geos()
+# )
 comb_fig.update_layout(
     margin={"r": 5, "t": 0, "l": 5, "b": 0},
     width=1500,
@@ -180,13 +181,14 @@ comb_fig.update_layout(
         y=0.95,
         xanchor="left",
         x=0.85
-    )
+    ),
+    mapbox=dict(center=map_options['map_center_start'],
+                zoom=map_options['map_zoom_start'])
 )
 
-comb_fig.add_trace(map_rivers)  # 1
-comb_fig.add_trace(map_rail)  # 2
-comb_fig.add_trace(map_roads)  # 3
-
+comb_fig.add_trace(map_rivers)
+comb_fig.add_trace(map_rail)
+comb_fig.add_trace(map_roads)
 
 fires = select(Fire)
 fires = sf.scalars(fires).all()
@@ -219,11 +221,9 @@ map_fires = px.scatter_mapbox(fires_df, lat='lat', lon='lon',
 
 comb_fig.add_trace(map_fires)
 
-background_layers_dict = {'map_loc': map_loc, 'map_rivers': map_rivers,
-                          'map_roads': map_roads, 'map_rail': map_rail}
-# comb_fig.add_trace(map_loc_buf)  # 4
-# comb_fig.add_trace(map_roads_buf)  # 5
-# comb_fig.add_trace(map_rivers_buf)  # 6
+# comb_fig.add_trace(map_loc_buf)
+# comb_fig.add_trace(map_roads_buf)
+# comb_fig.add_trace(map_rivers_buf)
 
 # comb_fig.update_traces(visible=False, selector={})
 
@@ -240,8 +240,6 @@ dom_select_background = dbc.Select(id="select_background",
                                    value=map_background_options[0])
 # Выбор фоновых слоёв
 background_layers_ids = ['map_loc', 'map_roads', 'map_rail', 'map_rivers']
-# background_layers = [map_loc, map_rail, map_rivers, map_roads]
-# background_layers_dict = {'map_loc': map_loc, }
 dom_backgound_layers_checklist = dbc.Checklist(id="checklist_layers",
                                                options=[{'label': 'Населённые пункты',
                                                          'value': 'map_loc'},
@@ -253,11 +251,6 @@ dom_backgound_layers_checklist = dbc.Checklist(id="checklist_layers",
                                                          'value': 'map_rivers'}],
                                                value=['map_loc'],
                                                switch=True)
-
-
-# html.Div(id="layers_checkboxes_div",
-#          children=[
-#              dbc.Checkbox(id='')])
 
 # Настройка прозрачности слоёв
 dom_opacity_slider = dcc.Slider(id="opacity_slider",
@@ -359,7 +352,6 @@ def set_background_layers(layers_ids, fig):
                 # patched_fig.append(g[0])
         elif len(g) > 0:
             # del patched_fig['data'][g[0]]
-            print(g[0])
             patched_fig['data'].remove(g[0])
 
     return patched_fig
