@@ -1,16 +1,16 @@
-from model.weather_event import WeatherEvent
-from model.meteo_record import MeteoRecord
+from models.weather_event import WeatherEvent
+from models.meteo_record import MeteoRecord
 
 
-from model.meteo_station import MeteoStation
-from model.forest_quarter import ForestQuarter
+from models.meteo_station import MeteoStation
+from models.forest_quarter import ForestQuarter
 
-from model.uch_forestry import UchForestry
-from model.dacha import Dacha
-from model.forest_seed_zoning_zone import ForestSeedZoningZone
-from model.foresst_zone import ForestZone
-from model.forestry import Forestry
+from models.uch_forestry import UchForestry
+from models.dacha import Dacha
+from models.forest_seed_zoning_zone import ForestSeedZoningZone
+from models.foresst_zone import ForestZone
+from models.forestry import Forestry
 
-from model.fire_status import FireStatus
-from model.territory_type import TerritoryType
-from model.fire import Fire
+from models.fire_status import FireStatus
+from models.territory_type import TerritoryType
+from models.fire import Fire

@@ -1,3 +1,4 @@
+# from models.fire import Fire
 from dash import Dash, Input, Output, callback, dash_table, dcc, html, Patch
 import dash_bootstrap_components as dbc
 import pandas as pd
@@ -9,7 +10,8 @@ import shapely
 # import shapely.geometry as geometry
 import config.db_config as db_config
 from sqlalchemy import select
-from model.fire import Fire
+# import
+
 
 MY_DATA_PATH = '../MY data/'
 
@@ -59,6 +61,10 @@ def load_geo_from_json(file_name):
     df = pd_to_gpd_w_geom(pd.read_json(path_to_json))
     return df
 
+
+# DBS = db_config.get_session_factory()
+
+# DBS.select(Fire)
 
 sf = db_config.get_session_factory()
 
@@ -180,40 +186,44 @@ comb_fig.update_layout(
 )
 
 
-def create_fires_df():
-    fires = select(Fire)
-    fires = sf.scalars(fires).all()
+# def create_fires_df():
+#     fires = select(Fire)
+#     fires = sf.scalars(fires).all()
 
-    fires_df = pd.DataFrame([t.__dict__ for t in fires]
-                            ).drop(columns={'_sa_instance_state'})
+#     fires_df = pd.DataFrame([t.__dict__ for t in fires]
+#                             ).drop(columns={'_sa_instance_state'})
 
-    lat = []
-    lon = []
-    for g in fires_df['coords']:
-        lat.append(shapely.from_wkb(str(g)).y)
-        lon.append(shapely.from_wkb(str(g)).x)
+#     lat = []
+#     lon = []
+#     for g in fires_df['coords']:
+#         lat.append(shapely.from_wkb(str(g)).y)
+#         lon.append(shapely.from_wkb(str(g)).x)
 
-    fires_df.insert(2, 'lat', lat)
-    fires_df.insert(2, 'lon', lon)
+#     fires_df.insert(2, 'lat', lat)
+#     fires_df.insert(2, 'lon', lon)
 
-    # geom = []
-    # for g in fires_df['coords']:
-    #     geom.append(shapely.from_wkb(str(g)))
+#     # geom = []
+#     # for g in fires_df['coords']:
+#     #     geom.append(shapely.from_wkb(str(g)))
 
-    # fires_gpd = gpd.GeoDataFrame(fires_df, geometry=geom)
+#     # fires_gpd = gpd.GeoDataFrame(fires_df, geometry=geom)
 
-    return px.scatter_mapbox(fires_df,
-                             lat='lat',
-                             lon='lon',
-                             opacity=1,
-                             color_discrete_sequence=['red']
-                             ).update_traces(uid="map_fires",
-                                             name='Пожары',
-                                             showlegend=True).data[0]
+#     return px.scatter_mapbox(fires_df,
+#                              lat='lat',
+#                              lon='lon',
+#                              opacity=1,
+#                              color_discrete_sequence=['red']
+#                              ).update_traces(uid="map_fires",
+#                                              name='Пожары',
+#                                              showlegend=True).data[0]
 
 
-map_fires = create_fires_df()
-comb_fig.add_trace(map_fires)
+# print('T')
+
+# map_fires = create_fires_df()
+# comb_fig.add_trace(map_fires)
+
+print('S')
 
 # comb_fig.add_trace(map_loc_buf)
 # comb_fig.add_trace(map_roads_buf)
@@ -342,6 +352,20 @@ def set_background_layers(layers_ids, fig):
 
     return patched_fig
 
+
+# DB connection data
+DB_DIALECT = "mysql"
+DB_ENGINE = "pymysql"
+DB_USERNAME = "root"
+DB_PASSWORD = ""
+DB_HOST = "localhost"
+DB_NAME = "weather_risks_app"
+DB_CHARSET = "utf8mb4"
+
+db_url = DB_DIALECT + "+" + DB_ENGINE + "://" + DB_USERNAME + ":" + \
+    DB_PASSWORD + "@" + DB_HOST + "/" + DB_NAME + "?charset=" + DB_CHARSET
+app.config["SQLALCHEMY_DATABASE_URI"] = db_url
+sf.init_app(app)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8050, debug=True)

@@ -1,13 +1,15 @@
 from sqlalchemy import create_engine, Table, Column, ForeignKey
 from sqlalchemy.orm import sessionmaker
 from config.db import DB
+from flask_sqlalchemy import SQLAlchemy
+from flask import Flask
 
 DB_DIALECT = "mysql"
 DB_ENGINE = "pymysql"
 DB_USERNAME = "root"
 DB_PASSWORD = ""
 DB_HOST = "localhost"
-DB_NAME = "test"
+DB_NAME = "weather_risks_app"
 DB_CHARSET = "utf8mb4"
 
 # Many-to-Many association
@@ -30,12 +32,18 @@ forest_quarters_meteo_stations = Table(
         "meteo_stations.id"), primary_key=True),
 )
 
+db_url = DB_DIALECT + "+" + DB_ENGINE + "://" + DB_USERNAME + ":" + \
+    DB_PASSWORD + "@" + DB_HOST + "/" + DB_NAME + "?charset=" + DB_CHARSET
+engine = create_engine(db_url, echo=True)
+session_factory = sessionmaker(bind=engine)
+DB.metadata.create_all(bind=engine)
+
 
 def get_session_factory():
     """Возвращает сессию БД."""
-    db_url = DB_DIALECT + "+" + DB_ENGINE + "://" + DB_USERNAME + ":" + \
-        DB_PASSWORD + "@" + DB_HOST + "/" + DB_NAME + "?charset=" + DB_CHARSET
-    engine = create_engine(db_url, echo=True)
-    session_factory = sessionmaker(bind=engine)
-    DB.metadata.create_all(bind=engine)
-    return session_factory()
+    db = SQLAlchemy(model_class=DB)
+    app = Flask(__name__)
+    with app.app_context():
+        db.create_all()
+    return db
+    # return session_factory()
