@@ -9,9 +9,9 @@ import plotly.express as px
 # import shapely
 # import shapely.geometry as geometry
 
-# from fires_app import flask_app
+from fires_app import flask_app
 from fires_app.config.fires_db_config import db
-from fires_app.utils import geodata_utils
+from fires_app.utils import geodata_utils, json_trace_creators
 
 # from fires_app import flask_app
 
@@ -35,107 +35,17 @@ DEFAULT_MAP_OPTIONS = {'map_center_start': {"lat": 52.25, "lon": 104.3},
                        'height': 800}
 
 
-def create_map_loc_trace():
-    df_loc = geodata_utils.load_geo_from_geojson(
-        "geodata/localities_Irk_obl.geojson")
-    return px.choropleth_mapbox(df_loc,
-                                geojson=df_loc['geometry'],
-                                locations=df_loc.index,
-                                opacity=DEFAULT_MAP_OPTIONS['opacity'],
-                                labels={'type': 'Тип'},
-                                hover_name='name',
-                                hover_data=['type'],
-                                color_discrete_sequence=['yellow']
-                                ).update_traces(uid="map_loc",
-                                                name='Населённые пункты'
-                                                ).data[0]
 
-
-def create_map_rail_trace():
-    df_rail = geodata_utils.load_geo_from_geojson("geodata/zhd_roads.geojson")
-    lats, lons = geodata_utils.get_coords_linestring(df_rail)
-    return px.line_mapbox(df_rail,
-                          lat=lats,
-                          lon=lons,
-                          color_discrete_sequence=['black'],
-                          ).update_traces(name="Железные дороги",
-                                          hovertemplate=None,
-                                          hoverinfo='skip',
-                                          uid='map_rail',
-                                          showlegend=True
-                                          ).data[0]
-
-
-def create_map_rivers_trace():
-    df_rivers = geodata_utils.load_geo_from_geojson("geodata/rivers.geojson")
-    lats, lons = geodata_utils.get_coords_linestring(df_rivers)
-    return px.line_mapbox(df_rivers,
-                          lat=lats,
-                          lon=lons,
-                          color_discrete_sequence=['blue'],
-                          ).update_traces(uid="map_rivers",
-                                          name='Реки',
-                                          line={'width': 1},
-                                          hovertemplate=None,
-                                          hoverinfo='skip',
-                                          showlegend=True
-                                          ).data[0]
-
-
-def create_map_roads_trace():
-    df_roads = geodata_utils.load_geo_from_geojson(
-        "geodata/auto_roads.geojson")
-    lats, lons = geodata_utils.get_coords_linestring(df_roads)
-    return px.line_mapbox(df_roads,
-                          lat=lats,
-                          lon=lons,
-                          color_discrete_sequence=['orange'],
-                          ).update_traces(name="Дороги",
-                                               line={'width': 2},
-                                               hovertemplate=None,
-                                               hoverinfo='skip',
-                                               uid='map_roads',
-                                               showlegend=True
-                                          ).data[0]
 
 
 print('app')
 
-# df_loc_buf = load_geo_from_json("MY buffers/localities_buffers.json")
-# map_loc_buf = px.choropleth_mapbox(df_loc_buf,
-#                                    geojson=df_loc_buf.geometry,
-#                                    locations=df_loc_buf.index,
-#                                    opacity=0.5,
-#                                    labels={'type': 'Тип'},
-#                                    color_discrete_sequence=['orange'],
-#                                    ).update_traces(uid="map_loc_buf",
-#                                                    visible=False).data[0]
 
-
-# df_road_buf = load_geo_from_json("MY buffers/roads_buffers.json")
-# map_roads_buf = px.choropleth_mapbox(df_road_buf,
-#                                      geojson=df_road_buf.geometry,
-#                                      locations=df_road_buf.index,
-#                                      opacity=0.5,
-#                                      labels={'type': 'Тип'},
-#                                      color_discrete_sequence=['yellow'],
-#                                      ).update_traces(uid="map_roads_buf",
-#                                                      visible=False).data[0]
-
-# df_rivers_buf = load_geo_from_json("MY buffers/rivers_buffers.json")
-# map_rivers_buf = px.choropleth_mapbox(df_rivers_buf,
-#                                       geojson=df_rivers_buf.geometry,
-#                                       locations=df_rivers_buf.index,
-#                                       opacity=0.5,
-#                                       labels={'type': 'Тип'},
-#                                       color_discrete_sequence=['yellow']
-#                                       ).update_traces(uid="map_rivers_buf",
-#                                                       visible=False,
-#                                                       showlegend=True).data[0]
 
 map_loc = create_map_loc_trace()
 
 comb_fig = go.Figure(map_loc)
+
 comb_fig.update_layout(
     margin={"r": 5, "t": 0, "l": 5, "b": 0},
     width=1500,
@@ -231,8 +141,8 @@ dom_select_main_layer = dbc.Select(id="select_main_layer",
 # responsive=True)
 
 # HTML app
-map_app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP],)
-#    server=flask_app)
+map_app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP],
+               server=flask_app)
 map_app.layout = html.Div(
     id="map_app",
 
@@ -295,23 +205,20 @@ def set_background_layers(layers_ids, fig):
     for l in background_layers_ids:
         # Выбор поиск выбранного слоя в текущих данных карты
         layer = [item for item in fig['data'] if item['uid'] == l]
-        # Слоя нет на карте?
-        if len(layer) == 0:
-            # Слой выбран
-            if (l in layers_ids):
-                match l:
-                    case "map_rivers":
-                        patched_fig['data'].append(create_map_rivers_trace())
-                    case "map_roads":
-                        patched_fig['data'].append(create_map_roads_trace())
-                    case "map_rail":
-                        patched_fig['data'].append(create_map_rail_trace())
-                    case "map_loc":
-                        patched_fig['data'].append(create_map_loc_trace())
-        # Слой есть на карте.
-        else:
-            if not (l in layers_ids):
-                patched_fig['data'].remove(layer[0])
+        # Слоя нет на карте И он содержится в списке выбранных?
+        if (len(layer) == 0) and (l in layers_ids):
+            match l:
+                case "map_rivers":
+                    patched_fig['data'].append(json_trace_creators.create_map_rivers_trace())
+                case "map_roads":
+                    patched_fig['data'].append(json_trace_creators.create_map_roads_trace())
+                case "map_rail":
+                    patched_fig['data'].append(json_trace_creators.create_map_rail_trace())
+                case "map_loc":
+                    patched_fig['data'].append(create_map_loc_trace())
+        # Слой есть на карте И его нет в списке выбранных?
+        elif (len(layer) > 0) and not (l in layers_ids):
+            patched_fig['data'].remove(layer[0])
 
     return patched_fig
 
