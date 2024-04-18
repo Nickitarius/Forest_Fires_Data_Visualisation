@@ -41,12 +41,6 @@ def create_fires_df():
     fires_df.insert(2, 'lat', lat)
     fires_df.insert(2, 'lon', lon)
 
-    # geom = []
-    # for g in fires_df['coords']:
-    #     geom.append(shapely.from_wkb(str(g)))
-
-    # fires_gpd = gpd.GeoDataFrame(fires_df, geometry=geom)
-
     return px.scatter_mapbox(fires_df,
                              lat='lat',
                              lon='lon',
@@ -60,7 +54,6 @@ def create_fires_df():
 map_loc = json_trace_creators.create_map_loc_trace()
 
 comb_fig = go.Figure(map_loc)
-
 comb_fig.update_layout(
     margin={"r": 5, "t": 0, "l": 5, "b": 0},
     width=1500,
@@ -74,7 +67,6 @@ comb_fig.update_layout(
     mapbox={"center": DEFAULT_MAP_OPTIONS['map_center_start'],
             "zoom": DEFAULT_MAP_OPTIONS['map_zoom_start']}
 )
-
 comb_fig.add_trace(create_fires_df())
 
 
@@ -90,6 +82,7 @@ dom_select_background = dbc.Select(id="select_background",
                                        {"label": "Positron тёмный",
                                         "value": MAP_BACKGROUND_OPTIONS[2]}],
                                    value=DEFAULT_MAP_OPTIONS['mapbox_style'])
+
 # Выбор фоновых слоёв
 background_layers_ids = ['map_loc', 'map_roads', 'map_rail', 'map_rivers']
 dom_backgound_layers_checklist = dbc.Checklist(id="checklist_layers",
@@ -104,6 +97,20 @@ dom_backgound_layers_checklist = dbc.Checklist(id="checklist_layers",
                                                     'value': 'map_rivers'}],
                                                value=['map_loc'],
                                                switch=True)
+
+# Выбор дат
+dom_date_choice = html.Div(id="dates_choice",
+                           children=[
+                               dbc.Label("Начало периода"),
+                               dbc.Input(id="date_start",
+                                         #  value="",
+                                         #  placeholder=,
+                                         type="date",),
+                               dbc.Label("Конец периода"),
+                               dbc.Input(id="date_end",
+                                         #  placeholder=,
+                                         type="date")
+                           ])
 
 # Настройка прозрачности слоёв
 dom_opacity_slider = dcc.Slider(id="opacity_slider",
@@ -149,6 +156,10 @@ map_app.layout = html.Div(
                 dom_select_background,
                 dbc.Label('Слой данных'),
                 dom_select_main_layer,
+
+                # html.Div('<input id="datepicker"/>'),
+                dbc.Input(id="datepicker")
+                # dom_date_choice,
             ],
 
             style={'padding': 10,
@@ -211,6 +222,13 @@ def set_background_layers(layers_ids, fig):
             patched_fig['data'].remove(layer[0])
 
     return patched_fig
+
+
+# @map_app.callback(Output("map", "figure", allow_duplicate=True),
+#                   Input("checklist_layers", "value"),
+#                   Input("map", "figure"))
+# def enforce_date_range_limits():
+#     pass
 
 
 if __name__ == '__main__':
