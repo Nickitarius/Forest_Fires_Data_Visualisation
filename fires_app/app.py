@@ -8,17 +8,10 @@ import plotly.graph_objects as go
 import plotly.express as px
 # import shapely
 # import shapely.geometry as geometry
-# from sqlalchemy import select
-# from flask_sqlalchemy import SQLAlchemy
 
-from fires_app.utils import geodata_utils
-
-# import config.db_config as db_config
-# from __init__ import flask_app as app
-# from . import app
-# import app
-from fires_app import flask_app
+# from fires_app import flask_app
 from fires_app.config.fires_db_config import db
+from fires_app.utils import geodata_utils
 
 # from fires_app import flask_app
 
@@ -32,7 +25,8 @@ from fires_app.config.fires_db_config import db
 
 # Map options
 MAP_BACKGROUND_OPTIONS = ["open-street-map",
-                          "carto-positron", "carto-darkmatter"]
+                          "carto-positron",
+                          "carto-darkmatter"]
 DEFAULT_MAP_OPTIONS = {'map_center_start': {"lat": 52.25, "lon": 104.3},
                        'map_zoom_start': 6,
                        'opacity': 0.25,
@@ -188,11 +182,6 @@ comb_fig.update_layout(
 #                                              name='Пожары',
 #                                              showlegend=True).data[0]
 
-
-# map_fires = create_fires_df()
-# comb_fig.add_trace(map_fires)
-
-
 # DOM Elements
 
 # Выбор подложки
@@ -225,7 +214,7 @@ dom_opacity_slider = dcc.Slider(id="opacity_slider",
                                 min=0,
                                 max=100,
                                 # marks={str(i) for i in range(0, 101, 20)},
-                                value=50,)
+                                value=50)
 # Карта
 dom_graph = dcc.Graph(id="map",
                       figure=comb_fig,
@@ -242,9 +231,8 @@ dom_select_main_layer = dbc.Select(id="select_main_layer",
 # responsive=True)
 
 # HTML app
-# server=flask_app)
-map_app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP],
-               server=flask_app)
+map_app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP],)
+#    server=flask_app)
 map_app.layout = html.Div(
     id="map_app",
 
@@ -322,7 +310,8 @@ def set_background_layers(layers_ids, fig):
                         patched_fig['data'].append(create_map_loc_trace())
         # Слой есть на карте.
         else:
-            patched_fig['data'].remove(layer[0])
+            if not (l in layers_ids):
+                patched_fig['data'].remove(layer[0])
 
     return patched_fig
 
