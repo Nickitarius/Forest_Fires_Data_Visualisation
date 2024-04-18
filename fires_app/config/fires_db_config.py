@@ -18,7 +18,6 @@ DB_URL = DB_DIALECT + "+" + DB_ENGINE + "://" + DB_USERNAME + ":" + \
 
 class FiresDB(DeclarativeBase):
     """База данных приложения."""
-    pass
 
 
 # Many-to-Many association

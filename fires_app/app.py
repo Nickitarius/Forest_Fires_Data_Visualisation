@@ -6,68 +6,22 @@ import geopandas as gpd
 # import plotly
 import plotly.graph_objects as go
 import plotly.express as px
-import shapely
+# import shapely
+# import sys
 # import shapely.geometry as geometry
 # from sqlalchemy import select
-from flask_sqlalchemy import SQLAlchemy
+# from flask_sqlalchemy import SQLAlchemy
+
+from utils import geodata_utils
 
 # import config.db_config as db_config
 # from __init__ import flask_app as app
 # from . import app
 # import app
 # from fires_app import flask_app
-from config.fires_db_config import db
+# from config.fires_db_config import db
+
 # from fires_app import flask_app
-
-MY_DATA_PATH = '../MY data/'
-
-import sys
-
-def pd_to_gpd_w_geom(df):
-    """Transforms Pandas DF to Geopandas DF, reading geometry stored as WKB from 'geom' field"""
-    geoms = []
-    for shape in df['geom']:
-        geoms.append(shapely.from_wkb(shape))
-
-    gdf = gpd.GeoDataFrame(df, geometry=geoms, crs="EPSG:4326")
-    return gdf
-
-
-def repalce_geometry_with_wkb(gdf):
-    """Recieves GeoPandas DF, deletes geometry, writes WKB based on it instead"""
-    wkb = gdf.geometry.to_wkb(hex=True)
-    gdf.drop(columns=['geometry'], inplace=True)
-    gdf.rename(columns={'poly': 'geom'}, inplace=True)
-    gdf['geom'] = wkb
-    return gdf
-
-
-def get_coords_linestring(gdf):
-    """Get coords from a GeoPandas DF"""
-    lats = []
-    lons = []
-    for i in gdf['geometry']:
-        lons = lons+i.coords.xy[0].tolist()
-        lats = lats+i.coords.xy[1].tolist()
-        lons.append(None)
-        lats.append(None)
-
-    return lats, lons
-
-
-def load_geo_from_geojson(file_name):
-    """Загружает географические данные из GEOJSON."""
-    path_to_json = MY_DATA_PATH + file_name
-    df = gpd.read_file(path_to_json)
-    return df
-
-
-def load_geo_from_json(file_name):
-    """Загружает географические данные из обычного JSON."""
-    path_to_json = MY_DATA_PATH + file_name
-    df = pd_to_gpd_w_geom(pd.read_json(path_to_json))
-    return df
-
 
 # DBS = db_config.get_session_factory()
 
@@ -78,20 +32,21 @@ def load_geo_from_json(file_name):
 # db = SQLAlchemy(model_class=db_config.FiresDB)
 
 # Map options
-map_background_options = ["open-street-map",
+MAP_BACKGROUND_OPTIONS = ["open-street-map",
                           "carto-positron", "carto-darkmatter"]
-map_options = {'map_center_start': {"lat": 52.25, "lon": 104.3},
-               'map_zoom_start': 6, 'opacity': 0.25,
-               'mapbox_style': map_background_options[1],
-               'width': 1500, 'height': 800}
+DEFAULT_MAP_OPTIONS = {'map_center_start': {"lat": 52.25, "lon": 104.3},
+                       'map_zoom_start': 6, 'opacity': 0.25,
+                       'mapbox_style': MAP_BACKGROUND_OPTIONS[1],
+                       'width': 1500, 'height': 800}
 
 
 def create_map_loc_trace():
-    df_loc = load_geo_from_geojson("geodata/localities_Irk_obl.geojson")
+    df_loc = geodata_utils.load_geo_from_geojson(
+        "geodata/localities_Irk_obl.geojson")
     return px.choropleth_mapbox(df_loc,
                                 geojson=df_loc.geometry,
                                 locations=df_loc.index,
-                                opacity=map_options['opacity'],
+                                opacity=DEFAULT_MAP_OPTIONS['opacity'],
                                 labels={'type': 'Тип'},
                                 hover_name='name',
                                 hover_data=['type'],
@@ -101,8 +56,8 @@ def create_map_loc_trace():
 
 
 def create_map_rail_trace():
-    df_rail = load_geo_from_geojson("geodata/zhd_roads.geojson")
-    lats, lons = get_coords_linestring(df_rail)
+    df_rail = geodata_utils.load_geo_from_geojson("geodata/zhd_roads.geojson")
+    lats, lons = geodata_utils.get_coords_linestring(df_rail)
     return px.line_mapbox(df_rail,
                           lat=lats,
                           lon=lons,
@@ -116,8 +71,8 @@ def create_map_rail_trace():
 
 
 def create_map_rivers_trace():
-    df_rivers = load_geo_from_geojson("geodata/rivers.geojson")
-    lats, lons = get_coords_linestring(df_rivers)
+    df_rivers = geodata_utils.load_geo_from_geojson("geodata/rivers.geojson")
+    lats, lons = geodata_utils.get_coords_linestring(df_rivers)
     return px.line_mapbox(df_rivers,
                           lat=lats,
                           lon=lons,
@@ -131,8 +86,9 @@ def create_map_rivers_trace():
 
 
 def create_map_roads_trace():
-    df_roads = load_geo_from_geojson("geodata/auto_roads.geojson")
-    lats, lons = get_coords_linestring(df_roads)
+    df_roads = geodata_utils.load_geo_from_geojson(
+        "geodata/auto_roads.geojson")
+    lats, lons = geodata_utils.get_coords_linestring(df_roads)
     return px.line_mapbox(df_roads,
                           lat=lats,
                           lon=lons,
@@ -143,9 +99,6 @@ def create_map_roads_trace():
                                                hoverinfo='skip',
                                                uid='map_roads',
                                                showlegend=True).data[0]
-
-
-map_loc = create_map_loc_trace()
 
 # df_loc_buf = load_geo_from_json("MY buffers/localities_buffers.json")
 # map_loc_buf = px.choropleth_mapbox(df_loc_buf,
@@ -179,19 +132,21 @@ map_loc = create_map_loc_trace()
 #                                                       visible=False,
 #                                                       showlegend=True).data[0]
 
+map_loc = create_map_loc_trace()
+
 comb_fig = go.Figure(map_loc)
 comb_fig.update_layout(
     margin={"r": 5, "t": 0, "l": 5, "b": 0},
     width=1500,
     height=800,
-    legend=dict(
-        yanchor="top",
-        y=0.95,
-        xanchor="left",
-        x=0.85
-    ),
-    mapbox=dict(center=map_options['map_center_start'],
-                zoom=map_options['map_zoom_start'])
+    legend={
+        "yanchor": "top",
+        "y": 0.95,
+        "xanchor": "left",
+        "x": 0.85
+    },
+    mapbox={"center": DEFAULT_MAP_OPTIONS['map_center_start'],
+            "zoom": DEFAULT_MAP_OPTIONS['map_zoom_start']}
 )
 
 
@@ -230,19 +185,19 @@ comb_fig.update_layout(
 # map_fires = create_fires_df()
 # comb_fig.add_trace(map_fires)
 
-print('S')
+print('T')
 
 # DOM Elements
 
 # Выбор подложки
 dom_select_background = dbc.Select(id="select_background",
                                    options=[{"label": "Open Street Map",
-                                             "value": map_background_options[0]},
+                                             "value": MAP_BACKGROUND_OPTIONS[0]},
                                             {"label": "Positron светлый",
-                                                "value": map_background_options[1]},
+                                                "value": MAP_BACKGROUND_OPTIONS[1]},
                                             {"label": "Positron тёмный",
-                                             "value": map_background_options[2]},],
-                                   value=map_options['mapbox_style'])
+                                             "value": MAP_BACKGROUND_OPTIONS[2]},],
+                                   value=DEFAULT_MAP_OPTIONS['mapbox_style'])
 # Выбор фоновых слоёв
 background_layers_ids = ['map_loc', 'map_roads', 'map_rail', 'map_rivers']
 dom_backgound_layers_checklist = dbc.Checklist(id="checklist_layers",
@@ -269,16 +224,18 @@ dom_graph = dcc.Graph(id="map",
                       style={"maxWidth": "70%"},)
 
 dom_select_main_layer = dbc.Select(id="select_main_layer",
-                                   options=[{"label": "Пожары",
-                                             "value": 'fires'},
-                                            {"label": "Риски пожаров",
-                                                "value": map_background_options[1]},
-                                            ],
+                                   options=[
+                                       {"label": "Пожары",
+                                        "value": 'fires'},
+                                       {"label": "Риски пожаров",
+                                        "value": MAP_BACKGROUND_OPTIONS[1]},
+                                   ],
                                    value='fires')
 # responsive=True)
 
 # HTML app
-map_app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP], server=flask_app)
+# server=flask_app)
+map_app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP], )
 map_app.layout = html.Div(
     id="map-app",
     children=[
@@ -287,7 +244,8 @@ map_app.layout = html.Div(
             id="map-control-panel",
             children=[
                 # Слои
-                html.Div(children=[  # dbc.Label('Слои'),
+                html.Div(children=[
+                    dbc.Label('Слои'),
                     # Выбор слоёв
                     dom_backgound_layers_checklist,
                     html.Br(),
@@ -336,8 +294,11 @@ def set_background_layers(layers_ids, fig):
     # back_layers_existing = fig.select_traces(
     #     lambda x: x.uid in background_layers_ids)
     for l in background_layers_ids:
-        g = [item for item in fig['data'] if item['uid'] == l]
-        if len(g) == 0:
+        # Выбор поиск выбранного слоя в текущих данных карты
+        layer = [item for item in fig['data'] if item['uid'] == l]
+        # Слоя нет на карте?
+        if len(layer) == 0:
+            # Слой выбран
             if (l in layers_ids):
                 match l:
                     case "map_rivers":
@@ -348,26 +309,12 @@ def set_background_layers(layers_ids, fig):
                         patched_fig['data'].append(create_map_rail_trace())
                     case "map_loc":
                         patched_fig['data'].append(create_map_loc_trace())
+        # Слой есть на карте.
         else:
-            patched_fig['data'].remove(g[0])
+            patched_fig['data'].remove(layer[0])
 
     return patched_fig
 
 
-# DB connection data
-# DB_DIALECT = "mysql"
-# DB_ENGINE = "pymysql"
-# DB_USERNAME = "root"
-# DB_PASSWORD = ""
-# DB_HOST = "localhost"
-# DB_NAME = "weather_risks_app"
-# DB_CHARSET = "utf8mb4"
-
-# db_url = DB_DIALECT + "+" + DB_ENGINE + "://" + DB_USERNAME + ":" + \
-#     DB_PASSWORD + "@" + DB_HOST + "/" + DB_NAME + "?charset=" + DB_CHARSET
-# map_app.server.config["SQLALCHEMY_DATABASE_URI"] = db_url
-# # db_session.init_app(app)
-# db.init_app(map_app.server)
-
 if __name__ == '__main__':
-    map_app.run(host='0.0.0.0', port=8050, debug=False)
+    map_app.run(host='0.0.0.0', port=8050, debug=True)
