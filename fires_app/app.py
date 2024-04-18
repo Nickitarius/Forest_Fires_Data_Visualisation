@@ -3,17 +3,14 @@ from dash import Dash, Input, Output, callback, dash_table, dcc, html, Patch
 import dash_bootstrap_components as dbc
 import pandas as pd
 import geopandas as gpd
-# import plotly
 import plotly.graph_objects as go
 import plotly.express as px
 # import shapely
-# import shapely.geometry as geometry
+# import plotly
 
 from fires_app import flask_app
 from fires_app.config.fires_db_config import db
 from fires_app.utils import geodata_utils, json_trace_creators
-
-# from fires_app import flask_app
 
 # DBS = db_config.get_session_factory()
 
@@ -35,14 +32,10 @@ DEFAULT_MAP_OPTIONS = {'map_center_start': {"lat": 52.25, "lon": 104.3},
                        'height': 800}
 
 
-
-
-
 print('app')
 
 
-
-map_loc = create_map_loc_trace()
+map_loc = json_trace_creators.create_map_loc_trace()
 
 comb_fig = go.Figure(map_loc)
 
@@ -209,13 +202,17 @@ def set_background_layers(layers_ids, fig):
         if (len(layer) == 0) and (l in layers_ids):
             match l:
                 case "map_rivers":
-                    patched_fig['data'].append(json_trace_creators.create_map_rivers_trace())
+                    patched_fig['data'].append(
+                        json_trace_creators.create_map_rivers_trace())
                 case "map_roads":
-                    patched_fig['data'].append(json_trace_creators.create_map_roads_trace())
+                    patched_fig['data'].append(
+                        json_trace_creators.create_map_roads_trace())
                 case "map_rail":
-                    patched_fig['data'].append(json_trace_creators.create_map_rail_trace())
+                    patched_fig['data'].append(
+                        json_trace_creators.create_map_rail_trace())
                 case "map_loc":
-                    patched_fig['data'].append(create_map_loc_trace())
+                    patched_fig['data'].append(
+                        json_trace_creators.create_map_loc_trace())
         # Слой есть на карте И его нет в списке выбранных?
         elif (len(layer) > 0) and not (l in layers_ids):
             patched_fig['data'].remove(layer[0])
