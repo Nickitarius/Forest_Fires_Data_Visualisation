@@ -7,19 +7,18 @@ import geopandas as gpd
 import plotly.graph_objects as go
 import plotly.express as px
 # import shapely
-# import sys
 # import shapely.geometry as geometry
 # from sqlalchemy import select
 # from flask_sqlalchemy import SQLAlchemy
 
-from utils import geodata_utils
+from fires_app.utils import geodata_utils
 
 # import config.db_config as db_config
 # from __init__ import flask_app as app
 # from . import app
 # import app
-# from fires_app import flask_app
-# from config.fires_db_config import db
+from fires_app import flask_app
+from fires_app.config.fires_db_config import db
 
 # from fires_app import flask_app
 
@@ -35,16 +34,18 @@ from utils import geodata_utils
 MAP_BACKGROUND_OPTIONS = ["open-street-map",
                           "carto-positron", "carto-darkmatter"]
 DEFAULT_MAP_OPTIONS = {'map_center_start': {"lat": 52.25, "lon": 104.3},
-                       'map_zoom_start': 6, 'opacity': 0.25,
+                       'map_zoom_start': 6,
+                       'opacity': 0.25,
                        'mapbox_style': MAP_BACKGROUND_OPTIONS[1],
-                       'width': 1500, 'height': 800}
+                       'width': 1500,
+                       'height': 800}
 
 
 def create_map_loc_trace():
     df_loc = geodata_utils.load_geo_from_geojson(
         "geodata/localities_Irk_obl.geojson")
     return px.choropleth_mapbox(df_loc,
-                                geojson=df_loc.geometry,
+                                geojson=df_loc['geometry'],
                                 locations=df_loc.index,
                                 opacity=DEFAULT_MAP_OPTIONS['opacity'],
                                 labels={'type': 'Тип'},
@@ -52,7 +53,8 @@ def create_map_loc_trace():
                                 hover_data=['type'],
                                 color_discrete_sequence=['yellow']
                                 ).update_traces(uid="map_loc",
-                                                name='Населённые пункты').data[0]
+                                                name='Населённые пункты'
+                                                ).data[0]
 
 
 def create_map_rail_trace():
@@ -82,7 +84,8 @@ def create_map_rivers_trace():
                                           line={'width': 1},
                                           hovertemplate=None,
                                           hoverinfo='skip',
-                                          showlegend=True).data[0]
+                                          showlegend=True
+                                          ).data[0]
 
 
 def create_map_roads_trace():
@@ -98,7 +101,11 @@ def create_map_roads_trace():
                                                hovertemplate=None,
                                                hoverinfo='skip',
                                                uid='map_roads',
-                                               showlegend=True).data[0]
+                                               showlegend=True
+                                          ).data[0]
+
+
+print('app')
 
 # df_loc_buf = load_geo_from_json("MY buffers/localities_buffers.json")
 # map_loc_buf = px.choropleth_mapbox(df_loc_buf,
@@ -185,30 +192,31 @@ comb_fig.update_layout(
 # map_fires = create_fires_df()
 # comb_fig.add_trace(map_fires)
 
-print('T')
 
 # DOM Elements
 
 # Выбор подложки
 dom_select_background = dbc.Select(id="select_background",
-                                   options=[{"label": "Open Street Map",
-                                             "value": MAP_BACKGROUND_OPTIONS[0]},
-                                            {"label": "Positron светлый",
-                                                "value": MAP_BACKGROUND_OPTIONS[1]},
-                                            {"label": "Positron тёмный",
-                                             "value": MAP_BACKGROUND_OPTIONS[2]},],
+                                   options=[
+                                       {"label": "Open Street Map",
+                                        "value": MAP_BACKGROUND_OPTIONS[0]},
+                                       {"label": "Positron светлый",
+                                        "value": MAP_BACKGROUND_OPTIONS[1]},
+                                       {"label": "Positron тёмный",
+                                        "value": MAP_BACKGROUND_OPTIONS[2]}],
                                    value=DEFAULT_MAP_OPTIONS['mapbox_style'])
 # Выбор фоновых слоёв
 background_layers_ids = ['map_loc', 'map_roads', 'map_rail', 'map_rivers']
 dom_backgound_layers_checklist = dbc.Checklist(id="checklist_layers",
-                                               options=[{'label': 'Населённые пункты',
-                                                         'value': 'map_loc'},
-                                                        {'label': 'Дороги',
-                                                         'value': 'map_roads'},
-                                                        {'label': 'Железные дороги',
-                                                         'value': 'map_rail'},
-                                                        {'label': 'Реки',
-                                                         'value': 'map_rivers'}],
+                                               options=[
+                                                   {'label': 'Населённые пункты',
+                                                    'value': 'map_loc'},
+                                                   {'label': 'Дороги',
+                                                    'value': 'map_roads'},
+                                                   {'label': 'Железные дороги',
+                                                    'value': 'map_rail'},
+                                                   {'label': 'Реки',
+                                                    'value': 'map_rivers'}],
                                                value=['map_loc'],
                                                switch=True)
 
@@ -235,9 +243,11 @@ dom_select_main_layer = dbc.Select(id="select_main_layer",
 
 # HTML app
 # server=flask_app)
-map_app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP], )
+map_app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP],
+               server=flask_app)
 map_app.layout = html.Div(
-    id="map-app",
+    id="map_app",
+
     children=[
         # Панель управления
         html.Div(
@@ -265,6 +275,7 @@ map_app.layout = html.Div(
         html.Div(className="vr"),
         dom_graph
     ],
+
     style={"margin": 10,
            "maxWidth": "100%",
            "height": "90vh",
@@ -275,21 +286,21 @@ map_app.layout = html.Div(
 # Callbacks
 
 
-@map_app.callback(Output("map", "figure"),
-                  Input("select_background", "value"),)
+@ map_app.callback(Output("map", "figure"),
+                   Input("select_background", "value"),)
 def set_mapbox_background(background_name):
-    """Устанавливает подложку карты. """
+    """Устанавливает подложку карты."""
     patched_fig = Patch()
     patched_fig['layout']['mapbox']['style'] = background_name
     return patched_fig
 
 
-@map_app.callback(Output("map", "figure", allow_duplicate=True),
-                  Input("checklist_layers", "value"),
-                  Input("map", "figure"),
-                  prevent_initial_call=True)
+@ map_app.callback(Output("map", "figure", allow_duplicate=True),
+                   Input("checklist_layers", "value"),
+                   Input("map", "figure"),
+                   prevent_initial_call=True)
 def set_background_layers(layers_ids, fig):
-    """Устанавливает фоновые слои карты. """
+    """Устанавливает фоновые слои карты."""
     patched_fig = Patch()
     # back_layers_existing = fig.select_traces(
     #     lambda x: x.uid in background_layers_ids)

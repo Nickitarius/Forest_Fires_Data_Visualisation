@@ -3,7 +3,8 @@ import shapely
 import pandas as pd
 import geopandas as gpd
 
-MY_DATA_PATH = '../MY data/'
+from fires_app import MY_DATA_PATH
+
 
 def pd_to_gpd_w_geom(df):
     """Transforms Pandas DF to Geopandas DF, reading geometry stored as WKB from 'geom' field."""
