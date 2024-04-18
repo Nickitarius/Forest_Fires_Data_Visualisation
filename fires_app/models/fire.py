@@ -1,9 +1,9 @@
-from sqlalchemy import String, ForeignKey, Date, Boolean, Double
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+import datetime
 from typing import Optional
 from geoalchemy2 import Geometry
-import datetime
-from config.fires_db_config import FiresDB
+from sqlalchemy import String, ForeignKey, Date, Boolean, Double
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from ..config.fires_db_config import FiresDB
 
 
 class Fire(FiresDB):

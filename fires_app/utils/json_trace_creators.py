@@ -13,7 +13,8 @@ def create_map_loc_trace():
                                 labels={'type': 'Тип'},
                                 hover_name='name',
                                 hover_data=['type'],
-                                color_discrete_sequence=['yellow']
+                                color_discrete_sequence=['yellow'],
+                                opacity=0.25
                                 ).update_traces(uid="map_loc",
                                                 name='Населённые пункты'
                                                 ).data[0]

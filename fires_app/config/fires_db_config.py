@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, Table, Column, ForeignKey
 from sqlalchemy.orm import DeclarativeBase
-# from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker
 from flask_sqlalchemy import SQLAlchemy
 # from fires_app import flask_app
 
@@ -46,4 +46,4 @@ FiresDB.metadata.create_all(bind=engine)
 db = SQLAlchemy(model_class=FiresDB)
 # db.init_app(flask_app)
 
-# session_factory = sessionmaker(bind=engine)
+session_factory = sessionmaker(bind=engine)

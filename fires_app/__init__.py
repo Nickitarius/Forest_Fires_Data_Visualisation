@@ -9,7 +9,8 @@ flask_app = flask.Flask(__name__)
 
 # flask_app.debug = True
 
-flask_app.config["SQLALCHEMY_DATABASE_URI"] = DB_URL
-db.init_app(flask_app)
+with flask_app.app_context():
+    flask_app.config["SQLALCHEMY_DATABASE_URI"] = DB_URL
+    db.init_app(flask_app)
 
 print("init")

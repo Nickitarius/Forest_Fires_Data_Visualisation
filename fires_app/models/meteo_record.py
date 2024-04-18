@@ -2,7 +2,7 @@ import datetime
 from sqlalchemy import ForeignKey, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List
-from config.fires_db_config import FiresDB
+from ..config.fires_db_config import FiresDB
 
 
 class MeteoRecord(FiresDB):

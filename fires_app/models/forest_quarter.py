@@ -2,7 +2,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from geoalchemy2 import Geometry
 from typing import List, Optional
-from config.fires_db_config import FiresDB
+from ..config.fires_db_config import FiresDB
 
 
 class ForestQuarter(FiresDB):

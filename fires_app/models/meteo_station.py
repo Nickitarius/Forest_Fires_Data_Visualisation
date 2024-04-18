@@ -2,7 +2,7 @@ from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List, Optional
 from geoalchemy2 import Geometry as Geometry
-from config.fires_db_config import FiresDB
+from ..config.fires_db_config import FiresDB
 
 
 class MeteoStation(FiresDB):

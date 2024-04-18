@@ -1,24 +1,17 @@
 # from models.fire import Fire
-from dash import Dash, Input, Output, callback, dash_table, dcc, html, Patch
 import dash_bootstrap_components as dbc
 import pandas as pd
 import geopandas as gpd
 import plotly.graph_objects as go
 import plotly.express as px
-# import shapely
+import shapely
+from dash import Dash, Input, Output, callback, dash_table, dcc, html, Patch
 # import plotly
 
 from fires_app import flask_app
 from fires_app.config.fires_db_config import db
 from fires_app.utils import geodata_utils, json_trace_creators
-
-# DBS = db_config.get_session_factory()
-
-# DBS.select(Fire)
-
-# db_session = db_config.get_session()
-# db = db_config.get_db()
-# db = SQLAlchemy(model_class=db_config.FiresDB)
+from fires_app.services import fire_service
 
 # Map options
 MAP_BACKGROUND_OPTIONS = ["open-street-map",
@@ -32,7 +25,36 @@ DEFAULT_MAP_OPTIONS = {'map_center_start': {"lat": 52.25, "lon": 104.3},
                        'height': 800}
 
 
-print('app')
+def create_fires_df():
+    # fires = select(Fire)
+    # fires = sf.scalars(fires).all()
+    fires = fire_service.get_fires()
+
+    fires_df = pd.DataFrame([t.__dict__ for t in fires]
+                            ).drop(columns={'_sa_instance_state'})
+    lat = []
+    lon = []
+    for g in fires_df['coords']:
+        lat.append(shapely.from_wkb(str(g)).y)
+        lon.append(shapely.from_wkb(str(g)).x)
+
+    fires_df.insert(2, 'lat', lat)
+    fires_df.insert(2, 'lon', lon)
+
+    # geom = []
+    # for g in fires_df['coords']:
+    #     geom.append(shapely.from_wkb(str(g)))
+
+    # fires_gpd = gpd.GeoDataFrame(fires_df, geometry=geom)
+
+    return px.scatter_mapbox(fires_df,
+                             lat='lat',
+                             lon='lon',
+                             opacity=1,
+                             color_discrete_sequence=['red']
+                             ).update_traces(uid="map_fires",
+                                             name='Пожары',
+                                             showlegend=True).data[0]
 
 
 map_loc = json_trace_creators.create_map_loc_trace()
@@ -53,37 +75,8 @@ comb_fig.update_layout(
             "zoom": DEFAULT_MAP_OPTIONS['map_zoom_start']}
 )
 
+comb_fig.add_trace(create_fires_df())
 
-# def create_fires_df():
-#     fires = select(Fire)
-#     fires = sf.scalars(fires).all()
-
-#     fires_df = pd.DataFrame([t.__dict__ for t in fires]
-#                             ).drop(columns={'_sa_instance_state'})
-
-#     lat = []
-#     lon = []
-#     for g in fires_df['coords']:
-#         lat.append(shapely.from_wkb(str(g)).y)
-#         lon.append(shapely.from_wkb(str(g)).x)
-
-#     fires_df.insert(2, 'lat', lat)
-#     fires_df.insert(2, 'lon', lon)
-
-#     # geom = []
-#     # for g in fires_df['coords']:
-#     #     geom.append(shapely.from_wkb(str(g)))
-
-#     # fires_gpd = gpd.GeoDataFrame(fires_df, geometry=geom)
-
-#     return px.scatter_mapbox(fires_df,
-#                              lat='lat',
-#                              lon='lon',
-#                              opacity=1,
-#                              color_discrete_sequence=['red']
-#                              ).update_traces(uid="map_fires",
-#                                              name='Пожары',
-#                                              showlegend=True).data[0]
 
 # DOM Elements
 
