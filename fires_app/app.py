@@ -2,16 +2,14 @@
 import dash_bootstrap_components as dbc
 import pandas as pd
 # import geopandas as gpd
-# import dash_mantine_components
 # import plotly
 import plotly.graph_objects as go
 import plotly.express as px
 import shapely
 from dash import Dash, Input, Output, callback, dash_table, dcc, html, Patch
 
-
 from fires_app import flask_app
-from fires_app.utils import geodata_utils, json_trace_creators
+from fires_app.utils import geodata_utils, json_trace_creators, db_trace_creators
 from fires_app.services import fire_service
 
 # Map options
@@ -24,35 +22,34 @@ DEFAULT_MAP_OPTIONS = {'map_center_start': {"lat": 52.25, "lon": 104.3},
                        'mapbox_style': MAP_BACKGROUND_OPTIONS[1],
                        'width': 1500,
                        'height': 800}
+MAIN_TRACE_UID = "main_trace"
 
 
-def create_fires_trace(date_start, date_end):
-    """Создаёт слой данных с пожарами, в соответствии с условиями."""
-    fires = fire_service.get_fires(date_start, date_end)
+def replace_trace_by_uid(fig, patch, uid, new_trace):
+    """Заменяет слой данных в графике с данным uid на новый слой."""
+    old_trace = [item for item in fig['data'] if item['uid'] == uid]
+    if (len(old_trace)>0):
+        patch['data'].remove(old_trace[0])
 
-    fires_df = pd.DataFrame([t.__dict__ for t in fires]
-                            ).drop(columns={'_sa_instance_state'})
-    lat = []
-    lon = []
-    for g in fires_df['coords']:
-        lat.append(shapely.from_wkb(str(g)).y)
-        lon.append(shapely.from_wkb(str(g)).x)
-
-    fires_df.insert(2, 'lat', lat)
-    fires_df.insert(2, 'lon', lon)
-
-    return px.scatter_mapbox(fires_df,
-                             lat='lat',
-                             lon='lon',
-                             opacity=1,
-                             color_discrete_sequence=['red']
-                             ).update_traces(uid="map_fires",
-                                             name='Пожары',
-                                             showlegend=True).data[0]
+    patch['data'].append(new_trace)
+    return patch
 
 
-comb_fig = go.Figure()
-comb_fig.update_layout(
+def patch_main_trace(fig, trace, patch, date_start, date_end):
+    """Меняет главный слой в данных графика."""
+    patch = Patch()
+    match trace:
+        case "fires":
+            new_trace = db_trace_creators.create_fires_trace(MAIN_TRACE_UID,
+                                                             date_start, date_end)
+
+    patch = replace_trace_by_uid(
+        fig, patch, MAIN_TRACE_UID, new_trace)
+    return patch
+
+
+map_fig = go.Figure()
+map_fig.update_layout(
     margin={"r": 5, "t": 0, "l": 5, "b": 0},
     width=1500,
     height=800,
@@ -65,7 +62,6 @@ comb_fig.update_layout(
     mapbox={"center": DEFAULT_MAP_OPTIONS['map_center_start'],
             "zoom": DEFAULT_MAP_OPTIONS['map_zoom_start']}
 )
-comb_fig.add_trace(create_fires_trace())
 
 
 # DOM Elements
@@ -96,18 +92,6 @@ dom_backgound_layers_checklist = dbc.Checklist(id="checklist_layers",
                                                value=['map_loc'],
                                                switch=True)
 
-# Выбор дат
-dom_date_choice = html.Div(id="dates_choice",
-                           children=[
-                               dbc.Label("Начало периода"),
-                               dbc.Input(id="date_start",
-                                         #  value="",
-                                         type="date",),
-                               dbc.Label("Конец периода"),
-                               dbc.Input(id="date_end",
-                                         type="date")
-                           ])
-
 # Настройка прозрачности слоёв
 dom_opacity_slider = dcc.Slider(id="opacity_slider",
                                 min=0,
@@ -116,9 +100,10 @@ dom_opacity_slider = dcc.Slider(id="opacity_slider",
                                 value=50)
 # Карта
 dom_graph = dcc.Graph(id="map",
-                      figure=comb_fig,
+                      figure=map_fig,
                       style={"maxWidth": "70%"},)
 
+# Выбор основного слоя
 dom_select_main_layer = dbc.Select(id="select_main_layer",
                                    options=[
                                        {"label": "Пожары",
@@ -129,6 +114,18 @@ dom_select_main_layer = dbc.Select(id="select_main_layer",
                                    value='fires')
 # responsive=True)
 
+# Выбор дат
+dom_date_choice = html.Div(id="dates_choice",
+                           children=[
+                               dbc.Label("Начало периода"),
+                               dbc.Input(id="date_start",
+                                         value="2017-01-01",
+                                         type="date",),
+                               dbc.Label("Конец периода"),
+                               dbc.Input(id="date_end",
+                                         value="2021-12-31",
+                                         type="date")
+                           ])
 
 # HTML app
 
@@ -184,7 +181,8 @@ def set_mapbox_background(background_name):
 @map_app.callback(Output("map", "figure", allow_duplicate=True),
                   Input("checklist_layers", "value"),
                   Input("map", "figure"),
-                  prevent_initial_call=True)
+                  prevent_initial_call=True,)
+#   prevent_initial_call='initial_duplicate')
 def set_background_layers(layers_ids, fig):
     """Устанавливает фоновые слои карты."""
     patched_fig = Patch()
@@ -216,20 +214,30 @@ def set_background_layers(layers_ids, fig):
 
 
 @map_app.callback(Output("date_end", "min"),
-                  Output("map", "figure"),
-                  Input("date_start", "value"))
-def adjust_min_end_date(date):
+                  Output("date_start", "max"),
+                  Output("map", "figure", allow_duplicate=True),
+                  Input("date_start", "value"),
+                  Input("date_end", "value"),
+                  Input("select_main_layer", "value"),
+                  Input("map", "figure"),
+                  prevent_initial_call=True
+                  )
+def adjust_min_end_date(date_start, date_end, selected_trace, fig):
     """Устанавливает минимальное значение конца выбранного периода равным началу периода."""
     patched_fig = Patch()
+    patched_fig = patch_main_trace(
+        fig, selected_trace, patched_fig, date_start, date_end)
+    return date_start, date_end, patched_fig
 
-    return date
 
-
-@map_app.callback(Output("date_start", "max"),
-                  Input("date_end", "value"))
-def adjust_max_start_date(date):
-    """Устанавливает максимальное значение начала выбранного периода равным концу периода."""
-    return date
+# @map_app.callback(Output("date_start", "max"),
+#                   Input("date_end", "value"))
+# def adjust_max_start_date(date_end):
+#     """Устанавливает максимальное значение начала выбранного периода равным концу периода."""
+#     patched_fig = Patch()
+#     patched_fig = patch_main_trace(
+#         fig, selected_trace, patched_fig, date_start, date_end)
+#     return date_end
 
 
 if __name__ == '__main__':
