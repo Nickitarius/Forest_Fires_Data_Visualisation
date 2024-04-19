@@ -28,7 +28,7 @@ MAIN_TRACE_UID = "main_trace"
 def replace_trace_by_uid(fig, patch, uid, new_trace):
     """Заменяет слой данных в графике с данным uid на новый слой."""
     old_trace = [item for item in fig['data'] if item['uid'] == uid]
-    if (len(old_trace)>0):
+    if (len(old_trace) > 0):
         patch['data'].remove(old_trace[0])
 
     patch['data'].append(new_trace)
@@ -144,14 +144,19 @@ map_app.layout = html.Div(
                     dbc.Label('Фоновые слои', html_for="checklist_layers"),
                     # Выбор слоёв
                     dom_backgound_layers_checklist,
-                    html.Br(),
+                    dbc.Label('Подложка', html_for="select_background"),
+                    dom_select_background,
+                ]),
+                html.Hr(),
+                html.Div(children=[
+                    dbc.Label('Слой данных', html_for="select_main_layer"),
+                    dom_select_main_layer,
                     dbc.Label('Прозрачность', html_for="opacity_slider"),
-                    dom_opacity_slider,]),
-                dbc.Label('Подложка', html_for="select_background"),
-                dom_select_background,
-                dbc.Label('Слой данных', html_for="select_main_layer"),
-                dom_select_main_layer,
+                    dom_opacity_slider,
+                ]),
+                html.Hr(),
                 dom_date_choice,
+                html.Hr(),
             ],
             style={'padding': 10}
         ),
