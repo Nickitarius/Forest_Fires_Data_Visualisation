@@ -152,24 +152,20 @@ map_app.layout = html.Div(
                 dom_select_background,
                 dbc.Label('Слой данных', html_for="select_main_layer"),
                 dom_select_main_layer,
-                dcc.DatePickerRange(),
                 dom_date_choice,
             ],
-
-            style={'padding': 10,
-                   # 'flex': 1,
-                   'width': '15%',
-                   'minWidth': 150}
+            style={'padding': 10}
         ),
         html.Div(className="vr"),
         dom_graph
     ],
 
-    style={"margin": 10,
-           "maxWidth": "100%",
-           "height": "90vh",
-           'display': 'flex',
-           'flexDirection': 'row'},
+    style={
+        "margin": 10,
+        # "maxWidth": "100%",
+        # "height": "90vh",
+        'display': 'flex',
+        'flexDirection': 'row'},
 )
 
 
