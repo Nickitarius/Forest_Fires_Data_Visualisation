@@ -1,16 +1,16 @@
 # from models.fire import Fire
 import dash_bootstrap_components as dbc
 import pandas as pd
-import geopandas as gpd
+# import geopandas as gpd
+# import dash_mantine_components
+# import plotly
 import plotly.graph_objects as go
 import plotly.express as px
 import shapely
 from dash import Dash, Input, Output, callback, dash_table, dcc, html, Patch
-# import dash_mantine_components
-# import plotly
+
 
 from fires_app import flask_app
-from fires_app.config.fires_db_config import db
 from fires_app.utils import geodata_utils, json_trace_creators
 from fires_app.services import fire_service
 
@@ -26,8 +26,10 @@ DEFAULT_MAP_OPTIONS = {'map_center_start': {"lat": 52.25, "lon": 104.3},
                        'height': 800}
 
 
-def create_fires_df():
-    fires = fire_service.get_fires()
+def create_fires_trace(date_start, date_end):
+    """Создаёт слой данных с пожарами, в соответствии с условиями."""
+    fires = fire_service.get_fires(date_start, date_end)
+
     fires_df = pd.DataFrame([t.__dict__ for t in fires]
                             ).drop(columns={'_sa_instance_state'})
     lat = []
@@ -63,7 +65,7 @@ comb_fig.update_layout(
     mapbox={"center": DEFAULT_MAP_OPTIONS['map_center_start'],
             "zoom": DEFAULT_MAP_OPTIONS['map_zoom_start']}
 )
-comb_fig.add_trace(create_fires_df())
+comb_fig.add_trace(create_fires_trace())
 
 
 # DOM Elements
@@ -170,8 +172,8 @@ map_app.layout = html.Div(
 
 
 # Callbacks
-@ map_app.callback(Output("map", "figure"),
-                   Input("select_background", "value"),)
+@map_app.callback(Output("map", "figure"),
+                  Input("select_background", "value"))
 def set_mapbox_background(background_name):
     """Устанавливает подложку карты."""
     patched_fig = Patch()
@@ -179,10 +181,10 @@ def set_mapbox_background(background_name):
     return patched_fig
 
 
-@ map_app.callback(Output("map", "figure", allow_duplicate=True),
-                   Input("checklist_layers", "value"),
-                   Input("map", "figure"),
-                   prevent_initial_call=True)
+@map_app.callback(Output("map", "figure", allow_duplicate=True),
+                  Input("checklist_layers", "value"),
+                  Input("map", "figure"),
+                  prevent_initial_call=True)
 def set_background_layers(layers_ids, fig):
     """Устанавливает фоновые слои карты."""
     patched_fig = Patch()
@@ -214,9 +216,12 @@ def set_background_layers(layers_ids, fig):
 
 
 @map_app.callback(Output("date_end", "min"),
+                  Output("map", "figure"),
                   Input("date_start", "value"))
 def adjust_min_end_date(date):
     """Устанавливает минимальное значение конца выбранного периода равным началу периода."""
+    patched_fig = Patch()
+
     return date
 
 
