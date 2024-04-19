@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import shapely
 from dash import Dash, Input, Output, callback, dash_table, dcc, html, Patch
+# import dash_mantine_components
 # import plotly
 
 from fires_app import flask_app
@@ -133,9 +134,15 @@ dom_select_main_layer = dbc.Select(id="select_main_layer",
                                    value='fires')
 # responsive=True)
 
+external_scripts = ["./assets/01_index.umd.min.js",
+                    "./assets/03_my_daterange_picker.js"]
+external_stylesheets = ["./fires_app/assets/02_index.css"]
+
 # HTML app
-map_app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP],
-               server=flask_app)
+# "./fires_app/assets/02_index.css"],
+map_app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP], server=flask_app)
+#    external_scripts=external_scripts,)
+
 map_app.layout = html.Div(
     id="map_app",
 
@@ -157,9 +164,21 @@ map_app.layout = html.Div(
                 dbc.Label('Слой данных'),
                 dom_select_main_layer,
 
+                # dbc.Input(id="daterange")
+
                 # html.Div('<input id="datepicker"/>'),
-                dbc.Input(id="datepicker", class_name=".datepicker")
-                # dom_date_choice,
+                # dbc.Input(id="datepicker")
+                dom_date_choice,
+                dmc.DatePicker(
+                    id="date-input-range-picker",
+                    label="Date Range",
+                    description="Select a date range",
+                    minDate=date(2020, 8, 5),
+                    type="range",
+                    value=[datetime.now().date(), datetime.now().date() + \
+                           timedelta(days=5)],
+                    maw=300,
+                ),
             ],
 
             style={'padding': 10,
@@ -179,6 +198,11 @@ map_app.layout = html.Div(
 )
 
 # Callbacks
+# map_app.css.append_css({"externaL_url": "./fires_app/assets/02_index.css"})
+# map_app.scripts.append_script({"external_url": "./assets/01_index.umd.min.js"})
+# map_app.scripts.append_script(
+#     {"external_url": "./assets/03_my_daterange_picker.js"})
+# map_app.external
 
 
 @ map_app.callback(Output("map", "figure"),
