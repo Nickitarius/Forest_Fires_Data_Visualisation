@@ -158,7 +158,7 @@ map_app.layout = html.Div(
                 dom_select_main_layer,
 
                 # html.Div('<input id="datepicker"/>'),
-                dbc.Input(id="datepicker")
+                dbc.Input(id="datepicker", class_name=".datepicker")
                 # dom_date_choice,
             ],
 
