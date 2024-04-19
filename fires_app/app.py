@@ -27,10 +27,7 @@ DEFAULT_MAP_OPTIONS = {'map_center_start': {"lat": 52.25, "lon": 104.3},
 
 
 def create_fires_df():
-    # fires = select(Fire)
-    # fires = sf.scalars(fires).all()
     fires = fire_service.get_fires()
-
     fires_df = pd.DataFrame([t.__dict__ for t in fires]
                             ).drop(columns={'_sa_instance_state'})
     lat = []
@@ -52,9 +49,7 @@ def create_fires_df():
                                              showlegend=True).data[0]
 
 
-map_loc = json_trace_creators.create_map_loc_trace()
-
-comb_fig = go.Figure(map_loc)
+comb_fig = go.Figure()
 comb_fig.update_layout(
     margin={"r": 5, "t": 0, "l": 5, "b": 0},
     width=1500,
@@ -105,11 +100,9 @@ dom_date_choice = html.Div(id="dates_choice",
                                dbc.Label("Начало периода"),
                                dbc.Input(id="date_start",
                                          #  value="",
-                                         #  placeholder=,
                                          type="date",),
                                dbc.Label("Конец периода"),
                                dbc.Input(id="date_end",
-                                         #  placeholder=,
                                          type="date")
                            ])
 
@@ -134,14 +127,10 @@ dom_select_main_layer = dbc.Select(id="select_main_layer",
                                    value='fires')
 # responsive=True)
 
-external_scripts = ["./assets/01_index.umd.min.js",
-                    "./assets/03_my_daterange_picker.js"]
-external_stylesheets = ["./fires_app/assets/02_index.css"]
 
 # HTML app
-# "./fires_app/assets/02_index.css"],
+
 map_app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP], server=flask_app)
-#    external_scripts=external_scripts,)
 
 map_app.layout = html.Div(
     id="map_app",
@@ -153,32 +142,18 @@ map_app.layout = html.Div(
             children=[
                 # Слои
                 html.Div(children=[
-                    dbc.Label('Слои'),
+                    dbc.Label('Фоновые слои', html_for="checklist_layers"),
                     # Выбор слоёв
                     dom_backgound_layers_checklist,
                     html.Br(),
-                    dbc.Label('Прозрачность.'),
+                    dbc.Label('Прозрачность', html_for="opacity_slider"),
                     dom_opacity_slider,]),
-                dbc.Label('Подложка'),
+                dbc.Label('Подложка', html_for="select_background"),
                 dom_select_background,
-                dbc.Label('Слой данных'),
+                dbc.Label('Слой данных', html_for="select_main_layer"),
                 dom_select_main_layer,
-
-                # dbc.Input(id="daterange")
-
-                # html.Div('<input id="datepicker"/>'),
-                # dbc.Input(id="datepicker")
+                dcc.DatePickerRange(),
                 dom_date_choice,
-                dmc.DatePicker(
-                    id="date-input-range-picker",
-                    label="Date Range",
-                    description="Select a date range",
-                    minDate=date(2020, 8, 5),
-                    type="range",
-                    value=[datetime.now().date(), datetime.now().date() + \
-                           timedelta(days=5)],
-                    maw=300,
-                ),
             ],
 
             style={'padding': 10,
@@ -197,14 +172,8 @@ map_app.layout = html.Div(
            'flexDirection': 'row'},
 )
 
+
 # Callbacks
-# map_app.css.append_css({"externaL_url": "./fires_app/assets/02_index.css"})
-# map_app.scripts.append_script({"external_url": "./assets/01_index.umd.min.js"})
-# map_app.scripts.append_script(
-#     {"external_url": "./assets/03_my_daterange_picker.js"})
-# map_app.external
-
-
 @ map_app.callback(Output("map", "figure"),
                    Input("select_background", "value"),)
 def set_mapbox_background(background_name):
@@ -248,11 +217,18 @@ def set_background_layers(layers_ids, fig):
     return patched_fig
 
 
-# @map_app.callback(Output("map", "figure", allow_duplicate=True),
-#                   Input("checklist_layers", "value"),
-#                   Input("map", "figure"))
-# def enforce_date_range_limits():
-#     pass
+@map_app.callback(Output("date_end", "min"),
+                  Input("date_start", "value"))
+def adjust_min_end_date(date):
+    """Устанавливает минимальное значение конца выбранного периода равным началу периода."""
+    return date
+
+
+@map_app.callback(Output("date_start", "max"),
+                  Input("date_end", "value"))
+def adjust_max_start_date(date):
+    """Устанавливает максимальное значение начала выбранного периода равным концу периода."""
+    return date
 
 
 if __name__ == '__main__':
