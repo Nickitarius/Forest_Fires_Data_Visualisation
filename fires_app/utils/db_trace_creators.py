@@ -6,16 +6,14 @@ from fires_app.services import fire_service
 
 def create_fires_trace(uid, date_start, date_end):
     """Создаёт слой данных с пожарами, в соответствии с условиями."""
-    fires = fire_service.get_fires(date_start, date_end)
-    # print(fires)
+    fires = fire_service.get_fires_limited_data(date_start, date_end)
 
-    fires_df = pd.DataFrame([t.__dict__ for t in fires]
-                            )  # .drop(columns={'_sa_instance_state'})
+    fires_df = pd.DataFrame([t._asdict() for t in fires]
+                            )
     lat = []
     lon = []
-    if (len(fires) > 0):
-        # print(fires_df)
-        
+    if len(fires) > 0:
+
         for g in fires_df['coords']:
             lat.append(shapely.from_wkb(str(g)).y)
             lon.append(shapely.from_wkb(str(g)).x)

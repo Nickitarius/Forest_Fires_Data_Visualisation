@@ -13,6 +13,16 @@ def get_fires(date_start, date_end):
         return res
 
 
+def get_fires_limited_data(date_start, date_end):
+    """Получает пожары из БД. """
+    with flask_app.app_context():
+        query = db.select(Fire.id, Fire.coords, Fire.date_start, Fire.date_end).where(
+            and_(Fire.date_start <= date_end, date_start <= Fire.date_end)
+        )
+        res = db.session.execute(query).fetchall()#.scalars().all()
+        return res
+
+
 def get_fire(id):
     """Получает пожар из БД. """
     with flask_app.app_context():
