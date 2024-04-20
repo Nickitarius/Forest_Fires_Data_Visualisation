@@ -17,6 +17,7 @@ DEFAULT_MAP_OPTIONS = {'map_center_start': {"lat": 52.25, "lon": 104.3},
                        'mapbox_style': MAP_BACKGROUND_OPTIONS[1],
                        'width': 1500,
                        'height': 800}
+# uid главного слоя данных на карте.
 MAIN_TRACE_UID = "main_trace"
 
 

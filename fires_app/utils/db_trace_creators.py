@@ -14,15 +14,18 @@ def create_fires_trace(uid, date_start, date_end):
     lat = []
     lon = []
     if len(fires) > 0:
-        for g in fires_df['coords']:
-            lat.append(shapely.from_wkb(str(g)).y)
-            lon.append(shapely.from_wkb(str(g)).x)
+        for i in range(len(fires_df)):
+            g = fires_df.loc[i]
+            lat.append(shapely.from_wkb(str(g['coords'])).y)
+            lon.append(shapely.from_wkb(str(g['coords'])).x)
+            fires_df.loc[i, 'fire_status'] = g['fire_status'].name
 
     hover_template = "<b>%{customdata[0]}<b><br>" +\
         "Начало: %{customdata[1]}<br>" +\
-        "Конец: %{customdata[2]}<br>"  # +\
-    # "Статус: {customdata[3].name}"
+        "Конец: %{customdata[2]}<br>" +\
+        "Статус: %{customdata[3]}"
 
+    print(fires_df.loc[0])
     fires_df.insert(0, 'lat', lat)
     fires_df.insert(0, 'lon', lon)
     return px.scatter_mapbox(fires_df,
@@ -33,8 +36,7 @@ def create_fires_trace(uid, date_start, date_end):
                              custom_data=['code',
                                           'date_start',
                                           'date_end',
-                                          #   fires_df['fire_status'].name
-                                          ]
+                                          "fire_status"],
                              ).update_traces(uid=uid,
                                              showlegend=True,
                                              hovertemplate=hover_template
