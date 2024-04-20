@@ -10,6 +10,7 @@ from fires_app.utils import json_trace_creators, db_trace_creators
 MAP_BACKGROUND_OPTIONS = ["open-street-map",
                           "carto-positron",
                           "carto-darkmatter"]
+#Опции карты по-умолчанию, в т.ч. опции input'ов
 DEFAULT_MAP_OPTIONS = {'map_center_start': {"lat": 52.25, "lon": 104.3},
                        'map_zoom_start': 6,
                        'opacity': 0.25,
@@ -43,6 +44,10 @@ def patch_main_trace(fig, trace, patch, date_start, date_end):
 
 
 map_fig = go.Figure()
+
+default_trace = db_trace_creators.create_fires_trace(
+    MAIN_TRACE_UID, "2017-01-01", "2021-12-31")
+map_fig.add_trace(default_trace)
 map_fig.update_layout(
     margin={"r": 5, "t": 0, "l": 5, "b": 0},
     width=1500,
@@ -54,7 +59,8 @@ map_fig.update_layout(
         "x": 0.85
     },
     mapbox={"center": DEFAULT_MAP_OPTIONS['map_center_start'],
-            "zoom": DEFAULT_MAP_OPTIONS['map_zoom_start']}
+            "zoom": DEFAULT_MAP_OPTIONS['map_zoom_start'],
+            "style": DEFAULT_MAP_OPTIONS['mapbox_style']}
 )
 
 
@@ -83,7 +89,7 @@ dom_backgound_layers_checklist = dbc.Checklist(id="checklist_layers",
                                                     'value': 'map_rail'},
                                                    {'label': 'Реки',
                                                     'value': 'map_rivers'}],
-                                               value=['map_loc'],
+                                               value='',
                                                switch=True)
 
 # Настройка прозрачности слоёв
@@ -168,8 +174,10 @@ map_app.layout = html.Div(
 
 
 # Callbacks
+
 @map_app.callback(Output("map", "figure"),
-                  Input("select_background", "value"))
+                  Input("select_background", "value"),
+                  prevent_initial_call=True)
 def set_mapbox_background(background_name):
     """Устанавливает подложку карты."""
     patched_fig = Patch()
@@ -216,8 +224,7 @@ def set_background_layers(layers_ids, fig):
                   Input("date_end", "value"),
                   Input("select_main_layer", "value"),
                   Input("map", "figure"),
-                  prevent_initial_call=True
-                  )
+                  prevent_initial_call=True)
 def adjust_min_end_date(date_start, date_end, selected_trace, fig):
     """Устанавливает минимальное значение конца выбранного периода равным началу периода."""
     patched_fig = Patch()

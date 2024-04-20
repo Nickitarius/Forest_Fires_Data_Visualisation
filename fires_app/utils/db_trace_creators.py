@@ -19,9 +19,9 @@ def create_fires_trace(uid, date_start, date_end):
             lon.append(shapely.from_wkb(str(g)).x)
 
     hover_template = "<b>%{customdata[0]}<b><br>" +\
-        "Начало: {customdata[1]}<br>" +\
-        "Конец: {customdata[2]}<br>" +\
-        "Статус: {customdata[3].name}"
+        "Начало: %{customdata[1]}<br>" +\
+        "Конец: %{customdata[2]}<br>"  # +\
+    # "Статус: {customdata[3].name}"
 
     fires_df.insert(0, 'lat', lat)
     fires_df.insert(0, 'lon', lon)
@@ -33,9 +33,9 @@ def create_fires_trace(uid, date_start, date_end):
                              custom_data=['code',
                                           'date_start',
                                           'date_end',
-                                          'fire_status']
+                                          #   fires_df['fire_status'].name
+                                          ]
                              ).update_traces(uid=uid,
-                                             name='Пожары',
                                              showlegend=True,
                                              hovertemplate=hover_template
                                              ).data[0]
