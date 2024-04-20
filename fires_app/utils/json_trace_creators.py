@@ -13,8 +13,6 @@ def create_map_loc_trace():
                                 geojson=df_loc['geometry'],
                                 locations=df_loc.index,
                                 labels={'type': 'Тип'},
-                                # hover_name='name',
-                                # hover_data=['type'],
                                 color_discrete_sequence=['yellow'],
                                 opacity=0.25,
                                 custom_data=['name', 'type']
