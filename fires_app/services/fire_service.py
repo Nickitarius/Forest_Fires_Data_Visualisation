@@ -1,6 +1,7 @@
+"""Функции для работы с таблицей Fire в БД."""
+from sqlalchemy import and_
 from fires_app import db, flask_app
 from fires_app.models.fire import Fire
-from sqlalchemy import and_, or_
 
 
 def get_fires(date_start, date_end):
@@ -19,7 +20,7 @@ def get_fires_limited_data(date_start, date_end):
         query = db.select(Fire.id, Fire.coords, Fire.date_start, Fire.date_end).where(
             and_(Fire.date_start <= date_end, date_start <= Fire.date_end)
         )
-        res = db.session.execute(query).fetchall()#.scalars().all()
+        res = db.session.execute(query).fetchall()
         return res
 
 

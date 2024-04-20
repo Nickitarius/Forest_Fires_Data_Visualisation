@@ -1,16 +1,10 @@
-# from models.fire import Fire
+"""Файл с приложением-интерактивной картой."""
 import dash_bootstrap_components as dbc
-import pandas as pd
-# import geopandas as gpd
-# import plotly
 import plotly.graph_objects as go
-import plotly.express as px
-import shapely
 from dash import Dash, Input, Output, callback, dash_table, dcc, html, Patch
 
 from fires_app import flask_app
-from fires_app.utils import geodata_utils, json_trace_creators, db_trace_creators
-from fires_app.services import fire_service
+from fires_app.utils import json_trace_creators, db_trace_creators
 
 # Map options
 MAP_BACKGROUND_OPTIONS = ["open-street-map",
@@ -28,7 +22,7 @@ MAIN_TRACE_UID = "main_trace"
 def replace_trace_by_uid(fig, patch, uid, new_trace):
     """Заменяет слой данных в графике с данным uid на новый слой."""
     old_trace = [item for item in fig['data'] if item['uid'] == uid]
-    if (len(old_trace) > 0):
+    if len(old_trace) > 0:
         patch['data'].remove(old_trace[0])
 
     patch['data'].append(new_trace)
@@ -187,12 +181,9 @@ def set_mapbox_background(background_name):
                   Input("checklist_layers", "value"),
                   Input("map", "figure"),
                   prevent_initial_call=True,)
-#   prevent_initial_call='initial_duplicate')
 def set_background_layers(layers_ids, fig):
     """Устанавливает фоновые слои карты."""
     patched_fig = Patch()
-    # back_layers_existing = fig.select_traces(
-    #     lambda x: x.uid in background_layers_ids)
     for l in background_layers_ids:
         # Выбор поиск выбранного слоя в текущих данных карты
         layer = [item for item in fig['data'] if item['uid'] == l]
@@ -233,16 +224,6 @@ def adjust_min_end_date(date_start, date_end, selected_trace, fig):
     patched_fig = patch_main_trace(
         fig, selected_trace, patched_fig, date_start, date_end)
     return date_start, date_end, patched_fig
-
-
-# @map_app.callback(Output("date_start", "max"),
-#                   Input("date_end", "value"))
-# def adjust_max_start_date(date_end):
-#     """Устанавливает максимальное значение начала выбранного периода равным концу периода."""
-#     patched_fig = Patch()
-#     patched_fig = patch_main_trace(
-#         fig, selected_trace, patched_fig, date_start, date_end)
-#     return date_end
 
 
 if __name__ == '__main__':
