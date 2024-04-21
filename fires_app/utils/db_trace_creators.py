@@ -7,21 +7,32 @@ import shapely
 from fires_app.services import fire_service
 
 
-def create_fires_trace(uid, date_start, date_end):
+def create_fires_trace(uid, date_start, date_end, forestries=None):
     """Создаёт слой данных с пожарами, в соответствии с условиями."""
-    fires = fire_service.get_fires_limited_data(date_start, date_end)
-    fires_df = pd.DataFrame([t.__dict__ for t in fires]).drop(
-        columns="_sa_instance_state"
-    )
+    fires = fire_service.get_fires_limited_data(date_start, date_end, forestries)
+    print(fires)
+    fires_df = pd.DataFrame([t.__dict__ for t in fires])
 
     lat = []
     lon = []
-    if len(fires) > 0:
-        for i in range(len(fires_df)):
-            g = fires_df.loc[i]
-            lat.append(shapely.from_wkb(str(g["coords"])).y)
-            lon.append(shapely.from_wkb(str(g["coords"])).x)
-            fires_df.loc[i, "fire_status"] = g["fire_status"].name
+    # Если по запросу в БД ничего нет — возвращаем пустой график
+    if len(fires) == 0:
+        return (
+            px.scatter_mapbox(fires_df)
+            .update_traces(
+                uid=uid,
+                showlegend=True,
+                name="Пожары",
+            )
+            .data[0]
+        )
+
+    fires_df.drop(columns="_sa_instance_state", inplace=True)
+    for i in range(len(fires_df)):
+        g = fires_df.loc[i]
+        lat.append(shapely.from_wkb(str(g["coords"])).y)
+        lon.append(shapely.from_wkb(str(g["coords"])).x)
+        fires_df.loc[i, "fire_status"] = g["fire_status"].name
 
     hover_template = (
         "<b>%{customdata[0]}<b><br>"

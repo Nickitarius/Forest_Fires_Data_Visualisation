@@ -33,13 +33,13 @@ def replace_trace_by_uid(fig, patch, uid, new_trace):
     return patch
 
 
-def patch_main_layer(fig, layer, date_start, date_end):
+def patch_main_layer(fig, layer, date_start, date_end, forestries=None):
     """Меняет главный слой в данных графика."""
     patch = Patch()
     match layer:
         case "fires":
             new_trace = db_trace_creators.create_fires_trace(
-                MAIN_TRACE_UID, date_start, date_end
+                MAIN_TRACE_UID, date_start, date_end, forestries
             )
 
     patch = replace_trace_by_uid(fig, patch, MAIN_TRACE_UID, new_trace)
@@ -314,18 +314,27 @@ def adjust_min_end_date(date_start, date_end):
 
 @map_app.callback(
     Output("map", "figure", allow_duplicate=True),
+    Input("map", "figure"),
     Input("date_start", "value"),
     Input("date_end", "value"),
     Input("select_main_layer", "value"),
-    Input("map", "figure"),
+    Input("forestries_dropdown", "value"),
     prevent_initial_call=True,
 )
-def set_main_layer(date_start, date_end, selected_trace, fig):
+def set_main_layer(
+    fig,
+    date_start,
+    date_end,
+    selected_trace,
+    forestries,
+):
     """
     Устанавливает гланый слой данных на карте
     в соответствии с input'ами.
     """
-    patched_fig = patch_main_layer(fig, selected_trace, date_start, date_end)
+    patched_fig = patch_main_layer(
+        fig, selected_trace, date_start, date_end, forestries
+    )
     return patched_fig
 
 

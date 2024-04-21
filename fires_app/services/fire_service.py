@@ -17,14 +17,27 @@ def get_fires_by_dates_range(date_start, date_end):
         return res
 
 
-def get_fires_limited_data(date_start, date_end):
+def get_fires_limited_data(date_start, date_end, forestries=None):
     """Получает пожары из БД."""
     with flask_app.app_context():
-        and_expression = and_(Fire.date_start <= date_end, date_start <= Fire.date_end)
+        print(forestries)
+        if forestries is not None and len(forestries) > 0:
+            and_expression = and_(
+                Fire.date_start <= date_end,
+                date_start <= Fire.date_end,
+                Fire.forestry_id.in_(forestries),
+            )
+        else:
+            and_expression = and_(
+                Fire.date_start <= date_end, date_start <= Fire.date_end
+            )
+
         query = db.select(Fire).where(and_expression)
         load_only_option = load_only(
             Fire.id, Fire.coords, Fire.date_start, Fire.date_end, Fire.code
         )
+        # query = query.where()
+
         joined_load_option = joinedload(Fire.fire_status)
         query = query.options(load_only_option, joined_load_option)
         res = db.session.execute(query).scalars().all()
