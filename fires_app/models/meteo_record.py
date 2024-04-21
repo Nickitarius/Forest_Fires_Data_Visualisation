@@ -6,7 +6,8 @@ from ..config.fires_db_config import FiresDB
 
 
 class MeteoRecord(FiresDB):
-    """Усреднённые погодные показатели за день. """
+    """Усреднённые погодные показатели за день."""
+
     __tablename__ = "meteo_records"
     id: Mapped[int] = mapped_column(primary_key=True)
     date: Mapped[datetime.date] = mapped_column(Date, nullable=False)
@@ -19,11 +20,11 @@ class MeteoRecord(FiresDB):
 
     # Many-to-One meteo_stations
     meteo_station_id: Mapped[int] = mapped_column(
-        ForeignKey("meteo_stations.id"), nullable=False)
-    meteo_station: Mapped["MeteoStation"] = relationship(
-        back_populates="meteo_records")
+        ForeignKey("meteo_stations.id"), nullable=False
+    )
+    meteo_station: Mapped["MeteoStation"] = relationship(back_populates="meteo_records")
 
     # Many-to-Many WeatherEvents
     weather_events: Mapped[List["WeatherEvent"]] = relationship(
-        secondary="weather_events_meteo_records",
-        back_populates="meteo_records")
+        secondary="weather_events_meteo_records", back_populates="meteo_records"
+    )
