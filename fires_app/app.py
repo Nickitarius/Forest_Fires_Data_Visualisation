@@ -2,7 +2,7 @@
 
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-from dash import Dash, Input, Output, Patch, dcc, html
+from dash import Dash, Input, Output, Patch, State, dcc, html
 
 from fires_app import flask_app
 from fires_app.services import forestry_service
@@ -54,13 +54,11 @@ def get_forestries_options(lang="ru"):
         for f in forestries:
             option = {"value": f.id, "label": f.name_ru}
             options.append(option)
-        options.append({"value": "all", "label": "Все"})
 
     elif lang == "en":
         for f in forestries:
             option = {"value": f.id, "label": f.name_en}
             options.append(option)
-        options.append({"value": "all", "label": "All"})
 
     return options
 
@@ -176,7 +174,23 @@ dom_date_choice = html.Div(
 # Выбор лесничества
 forestry_options = get_forestries_options()
 dom_forestries_dropdown = dcc.Dropdown(
-    id="forestries_dropdown", options=forestry_options, value="all", multi=True
+    id="forestries_dropdown",
+    options=forestry_options,
+    value=forestry_options[0]["value"],
+    multi=True,
+)
+# Кнопка выбора/отмены выбора всех лесничеств для dom_forestries_dropdown
+
+dom_select_deselct_all_forestries = html.Div(
+    dbc.Button(
+        id="select_deselct_all_button",
+        children="Выбрать все",
+        color="secondary",
+        outline=True,
+        class_name="mb-3",
+        size="sm",
+        value="select",
+    )
 )
 
 # Панель управления
@@ -197,18 +211,18 @@ dom_control_panel = html.Div(
         html.Hr(),
         dom_date_choice,
         html.Hr(),
-        dbc.Label("Выбор лесничества", html_for="forestry_dropdown"),
+        dbc.Label("Выбор лесничеств", html_for="forestry_dropdown"),
+        dom_select_deselct_all_forestries,
         dom_forestries_dropdown,
     ],
     style={
         "padding": 10,
+        # "flex-direction": "column"
     },
     className="col-sm-2",
 )
 
-
 # HTML app
-
 map_app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP], server=flask_app)
 map_app.layout = html.Div(
     id="map_app",
@@ -288,7 +302,10 @@ def set_background_layers(layers_ids, fig):
     prevent_initial_call=True,
 )
 def adjust_min_end_date(date_start, date_end):
-    """Устанавливает минимальное значение конца выбранного периода равным началу периода."""
+    """
+    Устанавливает минимальное значение конца выбранного периода
+    равным началу периода.
+    """
     return (
         date_start,
         date_end,
@@ -304,9 +321,50 @@ def adjust_min_end_date(date_start, date_end):
     prevent_initial_call=True,
 )
 def set_main_layer(date_start, date_end, selected_trace, fig):
-    """Устанавливает гланый слой данных на карте в соответствии с input'ами."""
+    """
+    Устанавливает гланый слой данных на карте
+    в соответствии с input'ами.
+    """
     patched_fig = patch_main_layer(fig, selected_trace, date_start, date_end)
     return patched_fig
+
+
+@map_app.callback(
+    Output("forestries_dropdown", "value"),
+    Input("select_deselct_all_button", "n_clicks"),
+    State("forestries_dropdown", "value"),
+    State("forestries_dropdown", "options"),
+    prevent_initial_call=True,
+)
+def select_deselect_all_forestries(selected_values, options):
+    """Выбирает или удаляет все объекты из dropdown'а."""
+    all_options = [option["value"] for option in options]
+    # Если выбран только один вариант, то вместо списка значение будет просто строкой/числом
+    if isinstance(selected_values, list):
+        if len(selected_values) == len(all_options):
+            return []
+
+    return all_options
+
+
+@map_app.callback(
+    Output("select_deselct_all_button", "children"),
+    Input("forestries_dropdown", "value"),
+    State("forestries_dropdown", "options"),
+    prevent_initial_call=True,
+)
+def set_select_deselct_button_text(selected_values, options):
+    """
+    Устанавливает текст кнопки в зависимости от значений
+    соответствующего dropdown'a.
+    """
+    all_options = [option["value"] for option in options]
+    # Если выбран только один вариант, то вместо списка значение будет просто строкой/числом
+    if isinstance(selected_values, list):
+        if len(selected_values) == len(all_options):
+            return "Удалить все"
+
+    return "Выбрать все"
 
 
 if __name__ == "__main__":
