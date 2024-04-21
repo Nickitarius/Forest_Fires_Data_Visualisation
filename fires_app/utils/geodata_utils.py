@@ -7,7 +7,9 @@ from fires_app import MY_DATA_PATH
 
 
 def pd_to_gpd_w_geom(df):
-    """Transforms Pandas DF to Geopandas DF, reading geometry stored as WKB from 'geom' field."""
+    """Transforms Pandas DF to Geopandas DF,
+    reading geometry stored as WKB from 'geom' field.
+    """
     geoms = []
     for shape in df['geom']:
         geoms.append(shapely.from_wkb(shape))
@@ -17,7 +19,9 @@ def pd_to_gpd_w_geom(df):
 
 
 def repalce_geometry_with_wkb(gdf):
-    """Recieves GeoPandas DF, deletes geometry, writes WKB based on it instead."""
+    """Recieves GeoPandas DF, deletes geometry,
+    writes WKB based on it instead.
+    """
     wkb = gdf.geometry.to_wkb(hex=True)
     gdf.drop(columns=['geometry'], inplace=True)
     gdf.rename(columns={'poly': 'geom'}, inplace=True)

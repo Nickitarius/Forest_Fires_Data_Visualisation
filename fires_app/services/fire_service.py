@@ -5,25 +5,30 @@ from fires_app import db, flask_app
 from fires_app.models.fire import Fire
 
 
-def get_fires(date_start, date_end):
+def get_fires_by_dates_range(date_start, date_end):
     """Получает пожары из БД. """
     with flask_app.app_context():
         query = db.select(Fire).where(
-            and_(Fire.date_start <= date_end, date_start <= Fire.date_end)
+            and_(Fire.date_start <= date_end,
+                 date_start <= Fire.date_end)
         )
         res = db.session.execute(query).scalars().all()
         return res
 
 
 def get_fires_limited_data(date_start, date_end):
-    """Получает пожары из БД. """
+    """Получает пожары из БД."""
     with flask_app.app_context():
-        query = db.select(Fire).where(
-            and_(Fire.date_start <= date_end,
-                 date_start <= Fire.date_end)).options(
-                     load_only(Fire.id, Fire.coords, Fire.date_start,
-                               Fire.date_end, Fire.code), joinedload(Fire.fire_status))
-        res = db.session.execute(query).fetchall()
+        and_expression = and_(Fire.date_start <= date_end,
+                              date_start <= Fire.date_end)
+        query = db.select(Fire).where(and_expression)
+        load_only_option = load_only(
+            Fire.id, Fire.coords, Fire.date_start,
+            Fire.date_end, Fire.code
+        )
+        joined_load_option = joinedload(Fire.fire_status)
+        query = query.options(load_only_option, joined_load_option)
+        res = db.session.execute(query).scalars().all()
         return res
 
 

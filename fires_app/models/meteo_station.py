@@ -9,9 +9,11 @@ class MeteoStation(FiresDB):
     __tablename__ = "meteo_stations"
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[Optional[str]] = mapped_column(
-        String(20, collation="utf8mb4_general_ci"), nullable=True)
+        String(20, collation="utf8mb4_general_ci"),
+        nullable=True)
     code: Mapped[str] = mapped_column(
-        String(20, collation="utf8mb4_general_ci"), nullable=True, unique=True)
+        String(20, collation="utf8mb4_general_ci"),
+        nullable=True, unique=True)
     coords: Mapped[Optional[Geometry]] = mapped_column(
         Geometry('POINT'), nullable=False)
 
