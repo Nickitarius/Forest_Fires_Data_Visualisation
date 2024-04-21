@@ -1,8 +1,10 @@
 import datetime
 from typing import Optional
+
 from geoalchemy2 import Geometry
-from sqlalchemy import String, ForeignKey, Date, Boolean, Double
+from sqlalchemy import Boolean, Date, Double, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from ..config.fires_db_config import FiresDB
 
 

@@ -1,8 +1,8 @@
 """Функции для работы с геоданными в json, geojson и датафреймах pandas и geopandas."""
 
-import shapely
-import pandas as pd
 import geopandas as gpd
+import pandas as pd
+import shapely
 
 from fires_app import MY_DATA_PATH
 

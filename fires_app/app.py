@@ -2,11 +2,11 @@
 
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-from dash import Dash, Input, Output, dcc, html, Patch
-from fires_app.services.forestry_service import get_all_forestries
+from dash import Dash, Input, Output, Patch, dcc, html
 
 from fires_app import flask_app
-from fires_app.utils import json_trace_creators, db_trace_creators
+from fires_app.services import forestry_service
+from fires_app.utils import db_trace_creators, json_trace_creators
 
 # Map options
 MAP_BACKGROUND_OPTIONS = ["open-street-map", "carto-positron", "carto-darkmatter"]
@@ -24,10 +24,7 @@ MAIN_TRACE_UID = "main_trace"
 
 
 def replace_trace_by_uid(fig, patch, uid, new_trace):
-    """
-    Заменяет слой данных в графике с данным uid
-    на новый слой.
-    """
+    """Заменяет слой данных в графике с данным uid на новый слой."""
     old_trace = [item for item in fig["data"] if item["uid"] == uid]
     if len(old_trace) > 0:
         patch["data"].remove(old_trace[0])
@@ -36,10 +33,10 @@ def replace_trace_by_uid(fig, patch, uid, new_trace):
     return patch
 
 
-def patch_main_trace(fig, trace, patch, date_start, date_end):
+def patch_main_layer(fig, layer, date_start, date_end):
     """Меняет главный слой в данных графика."""
     patch = Patch()
-    match trace:
+    match layer:
         case "fires":
             new_trace = db_trace_creators.create_fires_trace(
                 MAIN_TRACE_UID, date_start, date_end
@@ -49,7 +46,23 @@ def patch_main_trace(fig, trace, patch, date_start, date_end):
     return patch
 
 
-# print(get_all_forestries())
+def get_forestries_options(lang="ru"):
+    """Возвращает списки имён и"""
+    forestries = forestry_service.get_all_forestries()
+    options = []
+    if lang == "ru":
+        for f in forestries:
+            option = {"value": f.id, "label": f.name_ru}
+            options.append(option)
+        options.append({"value": "all", "label": "Все"})
+
+    elif lang == "en":
+        for f in forestries:
+            option = {"value": f.id, "label": f.name_en}
+            options.append(option)
+        options.append({"value": "all", "label": "All"})
+
+    return options
 
 
 map_fig = go.Figure()
@@ -58,9 +71,9 @@ default_trace = db_trace_creators.create_fires_trace(
 )
 map_fig.add_trace(default_trace)
 map_fig.update_layout(
-    margin={"r": 5, "t": 0, "l": 5, "b": 0},
-    width=1500,
-    height=800,
+    margin={"r": 5, "t": 1, "l": 5, "b": 1},
+    # width=1500,
+    # height=800,
     legend={"yanchor": "top", "y": 0.95, "xanchor": "left", "x": 0.85},
     mapbox={
         "center": DEFAULT_MAP_OPTIONS["map_center_start"],
@@ -98,6 +111,17 @@ dom_backgound_layers_checklist = dbc.Checklist(
     switch=True,
 )
 
+# Панель фоновых слоёв
+background_layers_panel = html.Div(
+    children=[
+        dbc.Label("Фоновые слои", html_for="checklist_layers"),
+        # Выбор слоёв
+        dom_backgound_layers_checklist,
+        dbc.Label("Подложка", html_for="select_background"),
+        dom_select_background,
+    ]
+)
+
 # Настройка прозрачности слоёв
 dom_opacity_slider = dcc.Slider(
     id="opacity_slider",
@@ -111,12 +135,16 @@ dom_graph = dcc.Graph(
     id="map",
     figure=map_fig,
     style={
-        "maxWidth": "70%",
+        # "maxWidth": "70%",
+        "height": "90vh",
+        "width": "100%",
+        "padding-left": "5px",
     },
+    # className="col-xl"
 )
 
 # Выбор основного слоя
-dom_select_main_layer = dbc.Select(
+dom_main_layer_select = dbc.Select(
     id="select_main_layer",
     options=[
         {"label": "Пожары", "value": "fires"},
@@ -145,44 +173,47 @@ dom_date_choice = html.Div(
     ],
 )
 
+# Выбор лесничества
+forestry_options = get_forestries_options()
+dom_forestries_dropdown = dcc.Dropdown(
+    id="forestries_dropdown", options=forestry_options, value="all", multi=True
+)
+
+# Панель управления
+dom_control_panel = html.Div(
+    id="map-control-panel",
+    children=[
+        # Фоновые слои
+        background_layers_panel,
+        html.Hr(),
+        html.Div(
+            children=[
+                dbc.Label("Слой данных", html_for="select_main_layer"),
+                dom_main_layer_select,
+                dbc.Label("Прозрачность", html_for="opacity_slider"),
+                dom_opacity_slider,
+            ]
+        ),
+        html.Hr(),
+        dom_date_choice,
+        html.Hr(),
+        dbc.Label("Выбор лесничества", html_for="forestry_dropdown"),
+        dom_forestries_dropdown,
+    ],
+    style={
+        "padding": 10,
+    },
+    className="col-sm-2",
+)
+
+
 # HTML app
 
 map_app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP], server=flask_app)
-
 map_app.layout = html.Div(
     id="map_app",
     children=[
-        # Панель управления
-        html.Div(
-            id="map-control-panel",
-            children=[
-                # Слои
-                html.Div(
-                    children=[
-                        dbc.Label("Фоновые слои", html_for="checklist_layers"),
-                        # Выбор слоёв
-                        dom_backgound_layers_checklist,
-                        dbc.Label("Подложка", html_for="select_background"),
-                        dom_select_background,
-                    ]
-                ),
-                html.Hr(),
-                html.Div(
-                    children=[
-                        dbc.Label("Слой данных", html_for="select_main_layer"),
-                        dom_select_main_layer,
-                        dbc.Label("Прозрачность", html_for="opacity_slider"),
-                        dom_opacity_slider,
-                    ]
-                ),
-                html.Hr(),
-                dom_date_choice,
-                html.Hr(),
-            ],
-            style={
-                "padding": 10,
-            },
-        ),
+        dom_control_panel,
         html.Div(className="vr"),
         dom_graph,
     ],
@@ -193,7 +224,7 @@ map_app.layout = html.Div(
         "display": "flex",
         "flexDirection": "row",
     },
-)+
+)
 
 
 # Callbacks
@@ -252,6 +283,19 @@ def set_background_layers(layers_ids, fig):
 @map_app.callback(
     Output("date_end", "min"),
     Output("date_start", "max"),
+    Input("date_start", "value"),
+    Input("date_end", "value"),
+    prevent_initial_call=True,
+)
+def adjust_min_end_date(date_start, date_end):
+    """Устанавливает минимальное значение конца выбранного периода равным началу периода."""
+    return (
+        date_start,
+        date_end,
+    )
+
+
+@map_app.callback(
     Output("map", "figure", allow_duplicate=True),
     Input("date_start", "value"),
     Input("date_end", "value"),
@@ -259,13 +303,10 @@ def set_background_layers(layers_ids, fig):
     Input("map", "figure"),
     prevent_initial_call=True,
 )
-def adjust_min_end_date(date_start, date_end, selected_trace, fig):
-    """Устанавливает минимальное значение конца выбранного периода равным началу периода."""
-    patched_fig = Patch()
-    patched_fig = patch_main_trace(
-        fig, selected_trace, patched_fig, date_start, date_end
-    )
-    return date_start, date_end, patched_fig
+def set_main_layer(date_start, date_end, selected_trace, fig):
+    """Устанавливает гланый слой данных на карте в соответствии с input'ами."""
+    patched_fig = patch_main_layer(fig, selected_trace, date_start, date_end)
+    return patched_fig
 
 
 if __name__ == "__main__":

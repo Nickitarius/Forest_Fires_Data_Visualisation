@@ -2,6 +2,7 @@
 
 from sqlalchemy import and_
 from sqlalchemy.orm import joinedload, load_only
+
 from fires_app import db, flask_app
 from fires_app.models.fire import Fire
 

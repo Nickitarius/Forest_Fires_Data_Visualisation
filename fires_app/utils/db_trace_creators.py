@@ -1,8 +1,9 @@
 """Содержит функции, создающие слои данных для карты с помощью данных из БД."""
 
 import pandas as pd
-import shapely
 import plotly.express as px
+import shapely
+
 from fires_app.services import fire_service
 
 
@@ -40,7 +41,9 @@ def create_fires_trace(uid, date_start, date_end):
             color_discrete_sequence=["red"],
             custom_data=["code", "date_start", "date_end", "fire_status"],
         )
-        .update_traces(uid=uid, showlegend=True, hovertemplate=hover_template)
+        .update_traces(
+            uid=uid, showlegend=True, name="Пожары", hovertemplate=hover_template
+        )
         .data[0]
     )
     return res

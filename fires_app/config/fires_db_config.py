@@ -1,9 +1,6 @@
-from sqlalchemy import create_engine, Table, Column, ForeignKey
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import sessionmaker
 from flask_sqlalchemy import SQLAlchemy
-
-# from fires_app import flask_app
+from sqlalchemy import Column, ForeignKey, Table, create_engine
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 DB_DIALECT = "mysql"
 DB_ENGINE = "pymysql"
