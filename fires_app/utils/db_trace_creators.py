@@ -13,19 +13,29 @@ def create_fires_trace(uid, date_start, date_end, forestries=None):
     # print(fires)
     fires_df = pd.DataFrame([t.__dict__ for t in fires])
 
+    # print(fires_df)
+
     lat = []
     lon = []
     # Если по запросу в БД ничего нет — возвращаем пустой график
-    if len(fires) == 0:
-        return (
+    if fires is None or len(fires) == 0:
+        # fires_df.insert(0, "lat", lat)
+        # fires_df.insert(0, "lon", lon)
+        # fires_df.ad
+        # fires_df.insert(0, "dummy", 0)
+        # fires_df = pd.DataFrame([["dummy"]], columns=["dummy"])
+        # print(fires_df)
+        res = (
             px.scatter_mapbox(fires_df)
             .update_traces(
                 uid=uid,
                 showlegend=True,
                 name="Пожары",
+                visibility=False,
             )
             .data[0]
         )
+        return res
 
     fires_df.drop(columns="_sa_instance_state", inplace=True)
     for i in range(len(fires_df)):
