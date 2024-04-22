@@ -76,7 +76,6 @@ def get_fire_info_DOM(fire_id):
         status_color = "green"
 
     duration_days = (fire.date_end - fire.date_start).days + 1
-    # print(fire.dura)
     res = html.Div(
         id="object_info",
         children=[
