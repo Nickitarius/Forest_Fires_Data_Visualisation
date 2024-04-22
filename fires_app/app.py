@@ -374,7 +374,7 @@ def set_main_layer(
     State("forestries_dropdown", "options"),
     prevent_initial_call=True,
 )
-def select_deselect_all_forestries(selected_values, options):
+def select_deselect_all_forestries(n_clicks, selected_values, options):
     """Выбирает или удаляет все объекты из dropdown'а."""
     all_options = [option["value"] for option in options]
     # Если выбран только один вариант, то вместо списка значение будет просто строкой/числом

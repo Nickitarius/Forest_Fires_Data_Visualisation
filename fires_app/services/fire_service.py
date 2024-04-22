@@ -20,41 +20,43 @@ def get_fires_by_dates_range(date_start, date_end):
 def get_fires_limited_data(date_start, date_end, forestries=None):
     """Получает пожары из БД."""
     with flask_app.app_context():
-        print(forestries)
+        dates_fit_condition = and_(
+            Fire.date_start <= date_end, date_start <= Fire.date_end
+        )
         if forestries is not None:
             # Если есть список лесничеств и он не пустой
             if isinstance(forestries, list):
                 if len(forestries) > 0:
-                    and_expression = and_(
+                    forestries_condition = and_(
                         Fire.date_start <= date_end,
                         date_start <= Fire.date_end,
                         Fire.forestry_id.in_(forestries),
                     )
                 else:
-                    and_expression = and_(
+                    forestries_condition = and_(
                         Fire.date_start <= date_end, date_start <= Fire.date_end
                     )
             # Если лесничество есть, и оно одно
             else:
-                and_expression = and_(
+                forestries_condition = and_(
                     Fire.date_start <= date_end,
                     date_start <= Fire.date_end,
                     Fire.forestry_id == forestries,
                 )
         # Если лесничества не выбраны, то возвращаем все лесничества сразу
         else:
-            and_expression = and_(
+            forestries_condition = and_(
                 Fire.date_start <= date_end, date_start <= Fire.date_end
             )
-
-        query = db.select(Fire).where(and_expression)
+        
+        conditions_all = and_(forestries_condition, dates_fit_condition)
+        query = db.select(Fire).where(conditions_all)
         load_only_option = load_only(
             Fire.id, Fire.coords, Fire.date_start, Fire.date_end, Fire.code
         )
-        # query = query.where()
-
         joined_load_option = joinedload(Fire.fire_status)
-        query = query.options(load_only_option, joined_load_option)
+        query = query.options(load_only_option)
+        query = query.options(joined_load_option)
         res = db.session.execute(query).scalars().all()
         return res
 
