@@ -51,7 +51,7 @@ def create_fires_trace(uid, date_start, date_end, forestries=None):
             lon="lon",
             opacity=1,
             color_discrete_sequence=["red"],
-            custom_data=["code", "date_start", "date_end", "fire_status"],
+            custom_data=["id", "code", "date_start", "date_end", "fire_status"],
         )
         .update_traces(
             uid=uid,
@@ -59,7 +59,7 @@ def create_fires_trace(uid, date_start, date_end, forestries=None):
             name="Пожары",
             hovertemplate=hover_template,
             # size=2,
-            marker={"size":10}
+            marker={"size": 10},
         )
         .data[0]
     )

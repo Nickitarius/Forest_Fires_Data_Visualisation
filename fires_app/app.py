@@ -2,11 +2,11 @@
 
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-from dash import Dash, Input, Output, Patch, State, dcc, html
+from dash import MATCH, Dash, Input, Output, Patch, State, dcc, html
 
 from fires_app import flask_app
-from fires_app.services import forestry_service, fire_status_service
-from fires_app.utils import db_trace_creators, json_trace_creators
+from fires_app.services import fire_status_service, forestry_service
+from fires_app.utils import db_trace_creators, json_trace_creators, map_utils
 
 # Map options
 MAP_BACKGROUND_OPTIONS = ["open-street-map", "carto-positron", "carto-darkmatter"]
@@ -21,58 +21,6 @@ DEFAULT_MAP_OPTIONS = {
 }
 # uid главного слоя данных на карте.
 MAIN_TRACE_UID = "main_trace"
-
-
-def replace_trace_by_uid(fig, patch, uid, new_trace):
-    """Заменяет слой данных в графике с данным uid на новый слой."""
-    old_trace = [item for item in fig["data"] if item["uid"] == uid]
-    if len(old_trace) > 0:
-        patch["data"].remove(old_trace[0])
-
-    patch["data"].append(new_trace)
-    return patch
-
-
-def patch_main_layer(fig, layer, date_start, date_end, forestries=None):
-    """Меняет главный слой в данных графика."""
-    patch = Patch()
-    match layer:
-        case "fires":
-            new_trace = db_trace_creators.create_fires_trace(
-                MAIN_TRACE_UID, date_start, date_end, forestries
-            )
-
-    patch = replace_trace_by_uid(fig, patch, MAIN_TRACE_UID, new_trace)
-    return patch
-
-
-def get_forestries_options(lang="ru"):
-    """Возвращает списки имён и"""
-    forestries = forestry_service.get_all_forestries()
-    options = []
-    if lang == "ru":
-        for f in forestries:
-            option = {"value": f.id, "label": f.name_ru}
-            options.append(option)
-
-    elif lang == "en":
-        for f in forestries:
-            option = {"value": f.id, "label": f.name_en}
-            options.append(option)
-
-    return options
-
-
-def get_fire_statuses_options():
-    """Возвращает списки имён и"""
-    statuses = fire_status_service.get_all_fire_statuses()
-    options = []
-    for f in statuses:
-        option = {"value": f.id, "label": f.name}
-        options.append(option)
-
-    return options
-
 
 # DOM Elements
 
@@ -123,7 +71,7 @@ dom_opacity_slider = dcc.Slider(
 
 # Выбор основного слоя
 dom_main_layer_select = dbc.Select(
-    id="select_main_layer",
+    id="main_layer_select",
     options=[
         {"label": "Пожары", "value": "fires"},
         {"label": "Риски пожаров", "value": MAP_BACKGROUND_OPTIONS[1]},
@@ -133,7 +81,7 @@ dom_main_layer_select = dbc.Select(
 # responsive=True)
 
 # Выбор дат
-dom_date_choice = html.Div(
+dom_dates_input = html.Div(
     id="dates_choice",
     children=[
         dbc.Label("Начало периода"),
@@ -153,7 +101,7 @@ dom_date_choice = html.Div(
 
 
 # Выбор лесничества
-forestry_options = get_forestries_options()
+forestry_options = map_utils.get_forestries_options()
 dom_forestries_dropdown = dcc.Dropdown(
     id="forestries_dropdown",
     options=forestry_options,
@@ -175,7 +123,7 @@ dom_select_deselct_all_forestries = html.Div(
 )
 
 # Выбор статусов пожаров
-fire_statuses = get_fire_statuses_options()
+fire_statuses = map_utils.get_fire_statuses_options()
 dom_fire_statuses_dropdown = dcc.Dropdown(
     id="fire_statuses_dropdown",
     options=fire_statuses,
@@ -193,14 +141,14 @@ dom_control_panel = html.Div(
         html.Hr(),
         html.Div(
             children=[
-                dbc.Label("Слой данных", html_for="select_main_layer"),
+                dbc.Label("Слой данных", html_for="main_layer_select"),
                 dom_main_layer_select,
                 dbc.Label("Прозрачность", html_for="opacity_slider"),
                 dom_opacity_slider,
             ]
         ),
         html.Hr(),
-        dom_date_choice,
+        dom_dates_input,
         html.Hr(),
         dbc.Label("Выбор лесничеств", html_for="forestry_dropdown"),
         dom_select_deselct_all_forestries,
@@ -251,6 +199,17 @@ dom_graph = dcc.Graph(
     # className="col-xl"
 )
 
+# Панель информации о выбранном объекте.
+dom_object_info_panel = html.Div(
+    id="object_info_panel",
+    children=[],
+    style={
+        "padding": 10,
+        # "flex-direction": "column"
+    },
+    className="col-sm-2",
+)
+
 # HTML app
 map_app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP], server=flask_app)
 map_app.layout = html.Div(
@@ -259,6 +218,8 @@ map_app.layout = html.Div(
         dom_control_panel,
         html.Div(className="vr"),
         dom_graph,
+        html.Div(className="vr"),
+        dom_object_info_panel,
     ],
     style={
         "margin": 10,
@@ -268,7 +229,6 @@ map_app.layout = html.Div(
         "flexDirection": "row",
     },
 )
-
 
 # Callbacks
 
@@ -346,7 +306,7 @@ def adjust_min_end_date(date_start, date_end):
     Input("map", "figure"),
     Input("date_start", "value"),
     Input("date_end", "value"),
-    Input("select_main_layer", "value"),
+    Input("main_layer_select", "value"),
     Input("forestries_dropdown", "value"),
     prevent_initial_call=True,
 )
@@ -361,8 +321,8 @@ def set_main_layer(
     Устанавливает гланый слой данных на карте
     в соответствии с input'ами.
     """
-    patched_fig = patch_main_layer(
-        fig, selected_trace, date_start, date_end, forestries
+    patched_fig = map_utils.patch_main_layer(
+        fig, selected_trace, MAIN_TRACE_UID, date_start, date_end, forestries
     )
     return patched_fig
 
@@ -403,6 +363,27 @@ def set_select_deselct_button_text(selected_values, options):
             return "Удалить все"
 
     return "Выбрать все"
+
+
+@map_app.callback(
+    Output("object_info_panel", "children"),
+    Input("map", "clickData"),
+    State("main_layer_select", "value"),
+    prevent_initial_call=True,
+)
+def display_clicked_object_data(click_data, selected_layer):
+    """Отображает данные о выбранном объекте в панели."""
+    clicked_object_id = click_data["points"][0]["customdata"][0]
+    patch = Patch()
+    # new_el = html.Div(clicked_object_id)
+    match selected_layer:
+        case "fires":
+            patch = map_utils.get_fire_info_DOM(clicked_object_id)
+        case _:
+            patch = html.Div()
+
+    patch = map_utils.get_fire_info_DOM(clicked_object_id)
+    return patch
 
 
 if __name__ == "__main__":

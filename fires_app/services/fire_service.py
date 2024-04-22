@@ -43,13 +43,13 @@ def get_fires_limited_data(date_start, date_end, forestries=None):
                     )
                     query = query.where(forestries_condition)
 
-            # Если список лесничеств пустой
+                # Если список лесничеств пустой
                 else:
                     pass
             # forestries_condition = and_(
             #     Fire.date_start <= date_end, date_start <= Fire.date_end
             # )
-            
+
             # Если лесничество есть, и оно одно
             else:
                 forestries_condition = and_(
@@ -64,5 +64,13 @@ def get_fires_limited_data(date_start, date_end, forestries=None):
 def get_fire(id):
     """Получает пожар из БД."""
     with flask_app.app_context():
-        res = db.session.execute(db.get_or_404(Fire, id))
+        query = db.select(Fire).where(Fire.id == id)
+        query = query.options(
+            joinedload(Fire.fire_status),
+            joinedload(Fire.forestry),
+            joinedload(Fire.territory_type),
+        )
+        # query = query.options(joinedload(Fire.forestry))
+        # query = query.options(joinedload(Fire.territory_type))
+        res = db.session.execute(query).scalar_one()
         return res
