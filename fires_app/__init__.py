@@ -1,9 +1,10 @@
 """Основное приложение. """
+
 import flask
 
-from fires_app.config.fires_db_config import db, DB_URL
+from fires_app.config.fires_db_config import DB_URL, db
 
-MY_DATA_PATH = '../MY data/'
+MY_DATA_PATH = "../MY data/"
 
 flask_app = flask.Flask(__name__)
 flask_app.config["SQLALCHEMY_DATABASE_URI"] = DB_URL

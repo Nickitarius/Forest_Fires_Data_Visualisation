@@ -1,8 +1,6 @@
-from sqlalchemy import create_engine, Table, Column, ForeignKey
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import sessionmaker
 from flask_sqlalchemy import SQLAlchemy
-# from fires_app import flask_app
+from sqlalchemy import Column, ForeignKey, Table, create_engine
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 DB_DIALECT = "mysql"
 DB_ENGINE = "pymysql"
@@ -11,12 +9,26 @@ DB_PASSWORD = ""
 DB_HOST = "localhost"
 DB_NAME = "weather_risks_app"
 DB_CHARSET = "utf8mb4"
-DB_URL = DB_DIALECT + "+" + DB_ENGINE + "://" + DB_USERNAME + ":" + \
-    DB_PASSWORD + "@" + DB_HOST + "/" + DB_NAME + "?charset=" + DB_CHARSET
+DB_URL = (
+    DB_DIALECT
+    + "+"
+    + DB_ENGINE
+    + "://"
+    + DB_USERNAME
+    + ":"
+    + DB_PASSWORD
+    + "@"
+    + DB_HOST
+    + "/"
+    + DB_NAME
+    + "?charset="
+    + DB_CHARSET
+)
 
 
 class FiresDB(DeclarativeBase):
     """База данных приложения."""
+
 
 # Assotiation tables
 
@@ -25,20 +37,16 @@ class FiresDB(DeclarativeBase):
 weather_events_meteo_records = Table(
     "weather_events_meteo_records",
     FiresDB.metadata,
-    Column("weather_event_id", ForeignKey(
-        "weather_events.id"), primary_key=True),
-    Column("meteo_record_id", ForeignKey(
-        "meteo_records.id"), primary_key=True),
+    Column("weather_event_id", ForeignKey("weather_events.id"), primary_key=True),
+    Column("meteo_record_id", ForeignKey("meteo_records.id"), primary_key=True),
 )
 
 # Many-to-Many association
 forest_quarters_meteo_stations = Table(
     "forest_quarters_meteo_stations",
     FiresDB.metadata,
-    Column("forest_quarter_id", ForeignKey(
-        "forest_quarters.id"), primary_key=True),
-    Column("meteo_station_id", ForeignKey(
-        "meteo_stations.id"), primary_key=True),
+    Column("forest_quarter_id", ForeignKey("forest_quarters.id"), primary_key=True),
+    Column("meteo_station_id", ForeignKey("meteo_stations.id"), primary_key=True),
 )
 
 engine = create_engine(DB_URL, echo=True)
