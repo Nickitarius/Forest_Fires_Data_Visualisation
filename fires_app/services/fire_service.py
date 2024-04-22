@@ -20,20 +20,28 @@ def get_fires_by_dates_range(date_start, date_end):
 def get_fires_limited_data(date_start, date_end, forestries=None):
     """Получает пожары из БД."""
     with flask_app.app_context():
-        # print(forestries)
+        print(forestries)
         if forestries is not None:
-            if isinstance(forestries, list) and len(forestries) > 0:
-                and_expression = and_(
-                    Fire.date_start <= date_end,
-                    date_start <= Fire.date_end,
-                    Fire.forestry_id.in_(forestries),
-                )
+            # Если есть список лесничеств и он не пустой
+            if isinstance(forestries, list):
+                if len(forestries) > 0:
+                    and_expression = and_(
+                        Fire.date_start <= date_end,
+                        date_start <= Fire.date_end,
+                        Fire.forestry_id.in_(forestries),
+                    )
+                else:
+                    and_expression = and_(
+                        Fire.date_start <= date_end, date_start <= Fire.date_end
+                    )
+            # Если лесничество есть, и оно одно
             else:
                 and_expression = and_(
                     Fire.date_start <= date_end,
                     date_start <= Fire.date_end,
                     Fire.forestry_id == forestries,
                 )
+        # Если лесничества не выбраны, то возвращаем все лесничества сразу
         else:
             and_expression = and_(
                 Fire.date_start <= date_end, date_start <= Fire.date_end

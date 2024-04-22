@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 from dash import Dash, Input, Output, Patch, State, dcc, html
 
 from fires_app import flask_app
-from fires_app.services import forestry_service
+from fires_app.services import forestry_service, fire_status_service
 from fires_app.utils import db_trace_creators, json_trace_creators
 
 # Map options
@@ -59,6 +59,17 @@ def get_forestries_options(lang="ru"):
         for f in forestries:
             option = {"value": f.id, "label": f.name_en}
             options.append(option)
+
+    return options
+
+
+def get_fire_statuses_options():
+    """Возвращает списки имён и"""
+    statuses = fire_status_service.get_all_fire_statuses()
+    options = []
+    for f in statuses:
+        option = {"value": f.id, "label": f.name}
+        options.append(option)
 
     return options
 
@@ -148,6 +159,7 @@ dom_forestries_dropdown = dcc.Dropdown(
     options=forestry_options,
     value=forestry_options[0]["value"],
     multi=True,
+    placeholder="Выбор...",
 )
 # Кнопка выбора/отмены выбора всех лесничеств для dom_forestries_dropdown
 
@@ -159,10 +171,18 @@ dom_select_deselct_all_forestries = html.Div(
         outline=True,
         class_name="mb-3",
         size="sm",
-        value="select",
     )
 )
 
+# Выбор статусов пожаров
+fire_statuses = get_fire_statuses_options()
+dom_fire_statuses_dropdown = dcc.Dropdown(
+    id="fire_statuses_dropdown",
+    options=fire_statuses,
+    value=fire_statuses[0]["value"],
+    multi=True,
+    placeholder="Выбор...",
+)
 
 # Панель управления
 dom_control_panel = html.Div(
@@ -185,6 +205,9 @@ dom_control_panel = html.Div(
         dbc.Label("Выбор лесничеств", html_for="forestry_dropdown"),
         dom_select_deselct_all_forestries,
         dom_forestries_dropdown,
+        html.Hr(),
+        dbc.Label("Выбор статуса пожаров", html_for="fire_statuses_dropdown"),
+        dom_fire_statuses_dropdown,
     ],
     style={
         "padding": 10,
