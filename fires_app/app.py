@@ -57,6 +57,12 @@ color_mode_switch = html.Span(
 
 nav_items.append(color_mode_switch)
 
+nav_items.append(
+    dbc.Button(
+        id="log_in_button_nav", color="warning", outline=True, children=["Войти"]
+    )
+)
+
 navbar = dbc.NavbarSimple(
     children=nav_items,
     brand="Fires Data Visualiser",

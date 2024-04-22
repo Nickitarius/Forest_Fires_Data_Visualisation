@@ -32,44 +32,56 @@ layout = dbc.Container(
     children=[
         html.Div(
             children=[
-                dbc.InputGroup(
+                html.Div(
                     children=[
-                        dbc.InputGroupText("Тип редактируемых данных "),
-                        dbc.Select(
-                            id="data_type_select",
-                            options=[{"value": "fires", "label": "Пожары"}],
-                            value="fires",
-                            # class_name="",
+                        dbc.Row(
+                            children=[
+                                dbc.Col(
+                                    children=[
+                                        dbc.InputGroup(
+                                            children=[
+                                                dbc.InputGroupText(
+                                                    "Тип редактируемых данных "
+                                                ),
+                                                dbc.Select(
+                                                    id="data_type_select",
+                                                    options=[
+                                                        {
+                                                            "value": "fires",
+                                                            "label": "Пожары",
+                                                        }
+                                                    ],
+                                                    value="fires",
+                                                    # class_name="",
+                                                ),
+                                            ],
+                                            # className="sm-3",
+                                        )
+                                    ],
+                                    # className="sm-3",
+                                ),
+                                dbc.Col(
+                                    children=[
+                                        dbc.Button(
+                                            "Очистить",
+                                            color="secondary",
+                                            # class_name=" btn-sm",
+                                        ),
+                                    ],
+                                ),
+                                dbc.Col(
+                                    children=[
+                                        dbc.Button(
+                                            "Сохранить",
+                                            color="primary",
+                                            # class_name=" btn-sm",
+                                        ),
+                                    ],
+                                ),
+                            ],
                         ),
                     ],
                     className="mb-3",
-                ),
-                dbc.Row(
-                    children=[
-                        dbc.InputGroup(
-                            children=[
-                                dbc.InputGroupText("Начало периода"),
-                                dbc.Input(
-                                    id="date_start",
-                                    value="2017-01-01",
-                                    type="date",
-                                ),
-                            ],
-                            className="col mb-3",
-                        ),
-                        dbc.InputGroup(
-                            children=[
-                                dbc.InputGroupText("Конец периода"),
-                                dbc.Input(
-                                    id="date_end",
-                                    value="2021-12-31",
-                                    type="date",
-                                ),
-                            ],
-                            className="col mb-3",
-                        ),
-                    ],
-                    class_name="",
                 ),
                 dash_table.DataTable(
                     id="table",
@@ -83,6 +95,22 @@ layout = dbc.Container(
                     page_action="native",
                     page_current=0,
                     page_size=20,
+                ),
+                dcc.Upload(
+                    id="datatable-upload",
+                    children=html.Div(
+                        ["Загрузите файл для ", html.A("предварительного просмотра.")]
+                    ),
+                    style={
+                        "width": "100%",
+                        "height": "60px",
+                        "lineHeight": "60px",
+                        "borderWidth": "1px",
+                        "borderStyle": "dashed",
+                        "borderRadius": "5px",
+                        "textAlign": "center",
+                        "margin": "10px",
+                    },
                 ),
             ],
             style={"padding": 50},
