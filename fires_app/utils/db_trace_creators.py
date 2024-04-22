@@ -10,7 +10,7 @@ from fires_app.services import fire_service
 def create_fires_trace(uid, date_start, date_end, forestries=None):
     """Создаёт слой данных с пожарами, в соответствии с условиями."""
     fires = fire_service.get_fires_limited_data(date_start, date_end, forestries)
-    print(fires)
+    # print(fires)
     fires_df = pd.DataFrame([t.__dict__ for t in fires])
 
     lat = []

@@ -63,25 +63,6 @@ def get_forestries_options(lang="ru"):
     return options
 
 
-map_fig = go.Figure()
-default_trace = db_trace_creators.create_fires_trace(
-    MAIN_TRACE_UID, "2017-01-01", "2021-12-31"
-)
-map_fig.add_trace(default_trace)
-map_fig.update_layout(
-    margin={"r": 5, "t": 1, "l": 5, "b": 1},
-    # width=1500,
-    # height=800,
-    legend={"yanchor": "top", "y": 0.95, "xanchor": "left", "x": 0.85},
-    mapbox={
-        "center": DEFAULT_MAP_OPTIONS["map_center_start"],
-        "zoom": DEFAULT_MAP_OPTIONS["map_zoom_start"],
-        "style": DEFAULT_MAP_OPTIONS["mapbox_style"],
-    },
-    clickmode="event+select",
-)
-
-
 # DOM Elements
 
 # Выбор подложки
@@ -128,18 +109,6 @@ dom_opacity_slider = dcc.Slider(
     # marks={str(i) for i in range(0, 101, 20)},
     value=50,
 )
-# Карта
-dom_graph = dcc.Graph(
-    id="map",
-    figure=map_fig,
-    style={
-        # "maxWidth": "70%",
-        "height": "90vh",
-        "width": "100%",
-        "padding-left": "5px",
-    },
-    # className="col-xl"
-)
 
 # Выбор основного слоя
 dom_main_layer_select = dbc.Select(
@@ -171,6 +140,7 @@ dom_date_choice = html.Div(
     ],
 )
 
+
 # Выбор лесничества
 forestry_options = get_forestries_options()
 dom_forestries_dropdown = dcc.Dropdown(
@@ -192,6 +162,7 @@ dom_select_deselct_all_forestries = html.Div(
         value="select",
     )
 )
+
 
 # Панель управления
 dom_control_panel = html.Div(
@@ -220,6 +191,41 @@ dom_control_panel = html.Div(
         # "flex-direction": "column"
     },
     className="col-sm-2",
+)
+
+map_fig = go.Figure()
+default_trace = db_trace_creators.create_fires_trace(
+    MAIN_TRACE_UID,
+    "2017-01-01",
+    "2021-12-31",
+    forestry_options[0]["value"],
+    # [option["value"] for option in forestry_options],
+)
+map_fig.add_trace(default_trace)
+map_fig.update_layout(
+    margin={"r": 5, "t": 1, "l": 5, "b": 1},
+    # width=1500,
+    # height=800,
+    legend={"yanchor": "top", "y": 0.95, "xanchor": "left", "x": 0.85},
+    mapbox={
+        "center": DEFAULT_MAP_OPTIONS["map_center_start"],
+        "zoom": DEFAULT_MAP_OPTIONS["map_zoom_start"],
+        "style": DEFAULT_MAP_OPTIONS["mapbox_style"],
+    },
+    clickmode="event+select",
+)
+
+# Карта
+dom_graph = dcc.Graph(
+    id="map",
+    figure=map_fig,
+    style={
+        # "maxWidth": "70%",
+        "height": "90vh",
+        "width": "100%",
+        "padding-left": "5px",
+    },
+    # className="col-xl"
 )
 
 # HTML app
