@@ -8,7 +8,6 @@ from dash import MATCH, Dash, Input, Output, Patch, State, callback, dcc, html
 from fires_app.services import fire_status_service, forestry_service
 from fires_app.utils import db_trace_creators, json_trace_creators, map_utils
 
-dash.register_page(__name__, path="/map")
 
 MAP_BACKGROUND_OPTIONS = ["open-street-map", "carto-positron", "carto-darkmatter"]
 # Опции карты по-умолчанию, в т.ч. опции input'ов
@@ -23,6 +22,8 @@ DEFAULT_MAP_OPTIONS = {
 # uid главного слоя данных на карте.
 MAIN_TRACE_UID = "main_trace"
 
+
+dash.register_page(__name__, path="/map", name="Карта")
 
 # DOM Elements
 
@@ -100,7 +101,6 @@ dom_dates_input = html.Div(
         ),
     ],
 )
-
 
 # Выбор лесничества
 forestry_options = map_utils.get_forestries_options()

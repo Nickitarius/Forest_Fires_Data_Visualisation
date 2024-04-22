@@ -18,10 +18,11 @@ def create_map_loc_trace():
             locations=df_loc.index,
             labels={"type": "Тип"},
             color_discrete_sequence=["yellow"],
-            opacity=0.25,
+            opacity=0.5,
             custom_data=["name", "type"],
         )
         .update_traces(
+            name = "Населённые пункты",
             uid="map_loc",
             hovertemplate=hover_tempalte,
         )
