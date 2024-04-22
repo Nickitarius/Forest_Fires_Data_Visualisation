@@ -10,21 +10,10 @@ from fires_app.services import fire_service
 def create_fires_trace(uid, date_start, date_end, forestries=None):
     """Создаёт слой данных с пожарами, в соответствии с условиями."""
     fires = fire_service.get_fires_limited_data(date_start, date_end, forestries)
-    # print(fires)
     fires_df = pd.DataFrame([t.__dict__ for t in fires])
 
-    # print(fires_df)
-
-    lat = []
-    lon = []
     # Если по запросу в БД ничего нет — возвращаем пустой график
     if fires is None or len(fires) == 0:
-        # fires_df.insert(0, "lat", lat)
-        # fires_df.insert(0, "lon", lon)
-        # fires_df.ad
-        # fires_df.insert(0, "dummy", 0)
-        # fires_df = pd.DataFrame([["dummy"]], columns=["dummy"])
-        # print(fires_df)
         res = (
             px.scatter_mapbox(fires_df)
             .update_traces(
@@ -37,6 +26,8 @@ def create_fires_trace(uid, date_start, date_end, forestries=None):
         )
         return res
 
+    lat = []
+    lon = []
     fires_df.drop(columns="_sa_instance_state", inplace=True)
     for i in range(len(fires_df)):
         g = fires_df.loc[i]
@@ -63,7 +54,12 @@ def create_fires_trace(uid, date_start, date_end, forestries=None):
             custom_data=["code", "date_start", "date_end", "fire_status"],
         )
         .update_traces(
-            uid=uid, showlegend=True, name="Пожары", hovertemplate=hover_template
+            uid=uid,
+            showlegend=True,
+            name="Пожары",
+            hovertemplate=hover_template,
+            # size=2,
+            marker={"size":10}
         )
         .data[0]
     )
