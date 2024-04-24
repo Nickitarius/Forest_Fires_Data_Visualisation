@@ -10,14 +10,18 @@ class Forestry(FiresDB):
     __tablename__ = "forestries"
     id: Mapped[int] = mapped_column(primary_key=True)
     name_en: Mapped[str] = mapped_column(
-        String(50, 
+        String(
+            50,
             #    collation="mb4_general_ci"
-               ), nullable=False
+        ),
+        nullable=False,
     )
     name_ru: Mapped[str] = mapped_column(
-        String(50, 
+        String(
+            50,
             #    collation="utf8mb4_general_ci"
-               ), nullable=False
+        ),
+        nullable=False,
     )
 
     # One-to-Many uch_forestries
