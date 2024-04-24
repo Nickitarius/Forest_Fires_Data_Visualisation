@@ -13,7 +13,7 @@ class ForestZone(FiresDB):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(
         String(
-            20,
+            50,
             #    collation="utf8mb4_general_ci"
         ),
         nullable=False,

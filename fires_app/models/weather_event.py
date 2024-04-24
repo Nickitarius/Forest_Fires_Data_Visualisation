@@ -14,7 +14,7 @@ class WeatherEvent(FiresDB):
     code: Mapped[int] = mapped_column(nullable=False)
     description_ru: Mapped[str] = mapped_column(
         # String(20, collation="utf8mb4_general_ci"), nullable=False
-        String(20),
+        String(300),
         nullable=False,
     )
 
