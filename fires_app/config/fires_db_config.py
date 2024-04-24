@@ -2,13 +2,40 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, ForeignKey, Table, create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-DB_DIALECT = "mysql"
-DB_ENGINE = "pymysql"
-DB_USERNAME = "root"
-DB_PASSWORD = ""
+from .fires_db import FiresDB
+
+# ПОРЯДОК ИМПОРТА ВАЖЕН!!!
+# При его нарушении связи в БД рушатся.
+from fires_app.models.weather_event import WeatherEvent
+from fires_app.models.meteo_record import MeteoRecord
+from fires_app.models.meteo_station import MeteoStation
+from fires_app.models.forest_quarter import ForestQuarter
+from fires_app.models.uch_forestry import UchForestry
+from fires_app.models.dacha import Dacha
+from fires_app.models.forest_seed_zoning_zone import ForestSeedZoningZone
+from fires_app.models.foresst_zone import ForestZone
+from fires_app.models.forestry import Forestry
+from fires_app.models.fire_status import FireStatus
+from fires_app.models.territory_type import TerritoryType
+from fires_app.models.fire import Fire
+
+# MySQL
+# DB_DIALECT = "mysql"
+# DB_ENGINE = "pymysql"
+# DB_USERNAME = "root"
+# DB_PASSWORD = ""
+# DB_CHARSET = "utf8mb4"
+# DB_NAME = "fire_risks_app"
+
+
+# PostgreSQL
+DB_DIALECT = "postgresql"
+DB_ENGINE = "psycopg"
+DB_USERNAME = "postgres"
+DB_PASSWORD = "pass"
+DB_NAME = "fires_app_test"
+
 DB_HOST = "localhost"
-DB_NAME = "weather_risks_app"
-DB_CHARSET = "utf8mb4"
 DB_URL = (
     DB_DIALECT
     + "+"
@@ -21,13 +48,12 @@ DB_URL = (
     + DB_HOST
     + "/"
     + DB_NAME
-    + "?charset="
-    + DB_CHARSET
+    # + "?charset="
+    # + DB_CHARSET
 )
 
-
-class FiresDB(DeclarativeBase):
-    """База данных приложения."""
+# class FiresDB(DeclarativeBase):
+#     """База данных приложения."""
 
 
 # Assotiation tables

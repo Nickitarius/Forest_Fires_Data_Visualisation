@@ -63,8 +63,17 @@ layout = dbc.Container(
                                 dbc.Col(
                                     children=[
                                         dbc.Button(
-                                            "Очистить",
+                                            "Добавить",
                                             color="secondary",
+                                            # class_name=" btn-sm",
+                                        ),
+                                    ],
+                                ),
+                                dbc.Col(
+                                    children=[
+                                        dbc.Button(
+                                            "Очистить",
+                                            color="warning",
                                             # class_name=" btn-sm",
                                         ),
                                     ],

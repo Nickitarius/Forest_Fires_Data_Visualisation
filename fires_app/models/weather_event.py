@@ -11,7 +11,9 @@ class WeatherEvent(FiresDB):
     id: Mapped[int] = mapped_column(primary_key=True)
     code: Mapped[int] = mapped_column(nullable=False)
     description_ru: Mapped[str] = mapped_column(
-        String(20, collation="utf8mb4_general_ci"), nullable=False
+        # String(20, collation="utf8mb4_general_ci"), nullable=False
+        String(20),
+        nullable=False,
     )
 
     # Many-to-Many
