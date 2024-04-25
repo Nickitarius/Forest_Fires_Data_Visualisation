@@ -1,5 +1,6 @@
 """Функции для работы с таблицей Fire в БД."""
 
+import sqlalchemy
 from sqlalchemy import and_
 from sqlalchemy.orm import joinedload, load_only
 
@@ -28,8 +29,12 @@ def get_fires_limited_data(date_start, date_end, forestries=None):
         query = query.options(load_only_option)
         query = query.options(joined_load_option)
 
+        # Период действия пожара пересекатся с заданным периодом времени
         dates_fit_condition = and_(
-            Fire.date_start <= date_end, date_start <= Fire.date_end
+            sqlalchemy.cast(Fire.date_start, sqlalchemy.Date)
+            <= sqlalchemy.cast(date_end, sqlalchemy.Date),
+            sqlalchemy.cast(date_start, sqlalchemy.Date)
+            <= sqlalchemy.cast(Fire.date_end, sqlalchemy.Date),
         )
         query = query.where(dates_fit_condition)
 

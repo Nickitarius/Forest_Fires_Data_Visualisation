@@ -2,7 +2,7 @@
 
 import flask
 
-from fires_app.config.fires_db_config import DB_URL, db
+from .config.fires_db_config import DB_URL, db
 
 MY_DATA_PATH = "../MY data/"
 
