@@ -14,7 +14,7 @@ forestries = 1
 # fires = fire_service.get_fires_limited_data("2017-01-01", "2021-01-01", forestries)
 fires_df = db_trace_creators.create_fires_df("2017-01-01", "2021-01-01", forestries)
 
-print(fires_df)
+# print(fires_df)
 
 fires_df.rename(
     columns={

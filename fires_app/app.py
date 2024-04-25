@@ -39,21 +39,22 @@ nav_items = [
     for page in dash.page_registry.values()
 ]
 
-color_mode_switch = html.Span(
+color_mode_switch = html.Div(
     [
         dbc.Label(className="bi bi-moon", html_for="color_mode_switch", color="light"),
         dbc.Switch(
             id="color_mode_switch",
-            value=True,
-            className="d-inline-block ms-1",
+            value=False,
+            class_name="d-inline-block ms-1",
             persistence=True,
             style={"padding-y": "-8px"},
         ),
-        dbc.Label(className="bi bi-sun", html_for="color_mode_switch", color="light"),
+        dbc.Label(class_name="bi bi-sun", html_for="color_mode_switch", color="light"),
     ],
-    className="d-inline-flex",
-    style={"padding-y": "-8px"},
+    className="form-check form-check-inline",
+    style={"padding-top":"0.5em"},
 )
+
 
 nav_items.append(color_mode_switch)
 
