@@ -2,27 +2,14 @@
 
 import dash
 import dash_bootstrap_components as dbc
-import plotly.graph_objects as go
-from dash import (
-    MATCH,
-    Dash,
-    Input,
-    Output,
-    Patch,
-    State,
-    clientside_callback,
-    dcc,
-    html,
-)
+from dash import MATCH, Dash, Input, Output, clientside_callback, html
 
 from fires_app import flask_app
-from fires_app.services import fire_status_service, forestry_service
-from fires_app.utils import db_trace_creators, json_trace_creators, map_utils
 
 MAIN_TRACE_UID = "main_trace"
 
 # HTML app
-app = Dash(
+dash_app = Dash(
     __name__,
     external_stylesheets=[
         dbc.themes.BOOTSTRAP,
@@ -52,7 +39,7 @@ color_mode_switch = html.Div(
         dbc.Label(class_name="bi bi-sun", html_for="color_mode_switch", color="light"),
     ],
     className="form-check form-check-inline",
-    style={"padding-top":"0.5em"},
+    style={"padding-top": "0.5em"},
 )
 
 
@@ -73,7 +60,7 @@ navbar = dbc.NavbarSimple(
     # light=True,
 )
 
-app.layout = dbc.Container(
+dash_app.layout = dbc.Container(
     id="dash_app_container",
     children=[
         navbar,
@@ -100,4 +87,4 @@ clientside_callback(
 # Callbacks
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8050, debug=True)
+    dash_app.run(host="0.0.0.0", port=8050, debug=True)

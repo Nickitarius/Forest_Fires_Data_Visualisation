@@ -5,7 +5,6 @@ import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 from dash import MATCH, Dash, Input, Output, Patch, State, callback, dcc, html
 
-from fires_app.services import fire_status_service, forestry_service
 from fires_app.utils import db_trace_creators, json_trace_creators, map_utils
 
 
@@ -306,21 +305,24 @@ def adjust_min_end_date(date_start, date_end):
     Input("date_end", "value"),
     Input("main_layer_select", "value"),
     Input("forestries_dropdown", "value"),
+    Input(dom_fire_statuses_dropdown, "value"),
     prevent_initial_call=True,
 )
 def set_main_layer(
-    fig,
-    date_start,
-    date_end,
-    selected_trace,
-    forestries,
+    fig, date_start, date_end, selected_trace, forestries, fire_statuses
 ):
     """
     Устанавливает гланый слой данных на карте
     в соответствии с input'ами.
     """
     patched_fig = map_utils.patch_main_layer(
-        fig, selected_trace, MAIN_TRACE_UID, date_start, date_end, forestries
+        fig,
+        selected_trace,
+        MAIN_TRACE_UID,
+        date_start,
+        date_end,
+        forestries,
+        fire_statuses,
     )
     return patched_fig
 

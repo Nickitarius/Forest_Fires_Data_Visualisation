@@ -1,26 +1,30 @@
 """Содержит функции, создающие слои данных для карты с помощью данных из БД."""
 
 import pandas as pd
+import plotly.graph_objects as go
 import plotly.express as px
 import shapely
 
 from fires_app.services import fire_service
 
 
-def create_fires_trace(uid, date_start, date_end, forestries=None):
+def create_fires_trace(uid, date_start, date_end, forestries=None, statuses=None):
     """Создаёт слой данных с пожарами, в соответствии с условиями."""
-    fires = fire_service.get_fires_limited_data(date_start, date_end, forestries)
+    fires = fire_service.get_fires_limited_data(
+        date_start, date_end, forestries, statuses
+    )
     fires_df = pd.DataFrame([t.__dict__ for t in fires])
 
     # Если по запросу в БД ничего нет — возвращаем пустой график
     if fires is None or len(fires) == 0:
+        fires_df = pd.DataFrame({"lat": [0], "lon": [0]})
+        print(fires_df)
         res = (
-            px.scatter_mapbox(fires_df)
+            px.choropleth_mapbox(fires_df)
             .update_traces(
                 uid=uid,
                 showlegend=True,
                 name="Пожары",
-                visibility=False,
             )
             .data[0]
         )
