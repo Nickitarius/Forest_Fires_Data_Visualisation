@@ -70,7 +70,7 @@ forest_quarters_meteo_stations = Table(
     Column("meteo_station_id", ForeignKey("meteo_stations.id"), primary_key=True),
 )
 
-__engine = create_engine(DB_URL, echo=False)#echo=True)
+__engine = create_engine(DB_URL, echo=True)
 FiresDB.metadata.create_all(bind=__engine)
 db = Flask_SQLAlchemy(model_class=FiresDB)
 

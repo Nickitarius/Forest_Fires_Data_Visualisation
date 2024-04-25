@@ -41,7 +41,7 @@ nav_items = [
 
 color_mode_switch = html.Span(
     [
-        dbc.Label(className="bi bi-moon-fill", html_for="color_mode_switch"),
+        dbc.Label(className="bi bi-moon", html_for="color_mode_switch", color="light"),
         dbc.Switch(
             id="color_mode_switch",
             value=True,
@@ -49,7 +49,7 @@ color_mode_switch = html.Span(
             persistence=True,
             style={"padding-y": "-8px"},
         ),
-        dbc.Label(className="bi bi-sun", html_for="color_mode_switch"),
+        dbc.Label(className="bi bi-sun", html_for="color_mode_switch", color="light"),
     ],
     className="d-inline-flex",
     style={"padding-y": "-8px"},
