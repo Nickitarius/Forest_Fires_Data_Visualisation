@@ -22,13 +22,15 @@ def replace_trace_by_uid(fig, patch, uid, new_trace):
     return patch
 
 
-def patch_main_layer(fig, layer, trace_uid, date_start, date_end, forestries=None):
+def patch_main_layer(
+    fig, layer, trace_uid, date_start, date_end, forestries=None, fire_statuses=None
+):
     """Меняет главный слой в данных графика."""
     patch = Patch()
     match layer:
         case "fires":
             new_trace = db_trace_creators.create_fires_trace(
-                trace_uid, date_start, date_end, forestries
+                trace_uid, date_start, date_end, forestries, fire_statuses
             )
 
     patch = replace_trace_by_uid(fig, patch, trace_uid, new_trace)
