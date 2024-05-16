@@ -8,10 +8,23 @@ import shapely
 from fires_app.services import fire_service
 
 
-def create_fires_trace(uid, date_start, date_end, forestries=None, statuses=None):
+def create_fires_trace(
+    uid,
+    date_start,
+    date_end,
+    forestries=None,
+    statuses=None,
+    fire_area_min=0,
+    fire_area_max=1000,
+):
     """Создаёт слой данных с пожарами, в соответствии с условиями."""
     fires = fire_service.get_fires_limited_data(
-        date_start, date_end, forestries, statuses
+        date_start,
+        date_end,
+        forestries,
+        statuses,
+        fire_area_min,
+        fire_area_max,
     )
     fires_df = pd.DataFrame([t.__dict__ for t in fires])
 

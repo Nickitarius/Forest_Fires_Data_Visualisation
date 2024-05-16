@@ -4,7 +4,7 @@ import geopandas as gpd
 import pandas as pd
 import shapely
 
-from fires_app import MY_DATA_PATH
+from fires_app import DATA_PATH
 
 
 def pd_to_gpd_w_geom(df):
@@ -45,13 +45,13 @@ def get_coords_linestring(gdf):
 
 def load_geo_from_geojson(file_name):
     """Загружает географические данные из GEOJSON."""
-    path_to_json = MY_DATA_PATH + file_name
+    path_to_json = DATA_PATH + file_name
     df = gpd.read_file(path_to_json)
     return df
 
 
 def load_geo_from_json(file_name):
     """Загружает географические данные из обычного JSON."""
-    path_to_json = MY_DATA_PATH + file_name
+    path_to_json = DATA_PATH + file_name
     df = pd_to_gpd_w_geom(pd.read_json(path_to_json))
     return df

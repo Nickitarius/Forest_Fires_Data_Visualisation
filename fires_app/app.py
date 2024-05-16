@@ -6,8 +6,6 @@ from dash import MATCH, Dash, Input, Output, clientside_callback, html
 
 from fires_app import flask_app
 
-MAIN_TRACE_UID = "main_trace"
-
 # HTML app
 dash_app = Dash(
     __name__,

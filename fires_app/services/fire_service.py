@@ -29,7 +29,7 @@ def set_forestries_condition(query, forestries):
     return query
 
 
-def set_statuses_condition(query, statuses):
+def set_area_condition(query, statuses):
     if statuses is not None:
         # Если есть список лесничеств
         is_list = isinstance(statuses, list)
@@ -49,17 +49,24 @@ def set_statuses_condition(query, statuses):
     return query
 
 
-def get_fires_by_dates_range(date_start, date_end):
-    """Получает пожары из БД."""
-    with flask_app.app_context():
-        query = db.select(Fire).where(
-            and_(Fire.date_start <= date_end, date_start <= Fire.date_end)
-        )
-        res = db.session.execute(query).scalars().all()
-        return res
+# def get_fires_by_dates_range(date_start, date_end):
+#     """Получает пожары из БД."""
+#     with flask_app.app_context():
+#         query = db.select(Fire).where(
+#             and_(Fire.date_start <= date_end, date_start <= Fire.date_end)
+#         )
+#         res = db.session.execute(query).scalars().all()
+#         return res
 
 
-def get_fires_limited_data(date_start, date_end, forestries=None, statuses=None):
+def get_fires_limited_data(
+    date_start,
+    date_end,
+    forestries=None,
+    statuses=None,
+    fire_area_min=0,
+    fire_area_max=1000,
+):
     """Получает пожары из БД."""
     with flask_app.app_context():
         query = db.select(Fire)
@@ -69,6 +76,7 @@ def get_fires_limited_data(date_start, date_end, forestries=None, statuses=None)
         joined_load_option = joinedload(Fire.fire_status)
         query = query.options(load_only_option)
         query = query.options(joined_load_option)
+
         # Период действия пожара пересекатся с заданным периодом времени
         dates_fit_condition = and_(
             sqlalchemy.cast(Fire.date_start, sqlalchemy.Date)
@@ -76,9 +84,13 @@ def get_fires_limited_data(date_start, date_end, forestries=None, statuses=None)
             sqlalchemy.cast(date_start, sqlalchemy.Date)
             <= sqlalchemy.cast(Fire.date_end, sqlalchemy.Date),
         )
-        query = query.where(dates_fit_condition)
+        area_condition = and_(
+            Fire.area_all >= fire_area_min, Fire.area_all <= fire_area_max
+        )
 
-        query = set_statuses_condition(query, statuses)
+        query = query.where(dates_fit_condition)
+        query = query.where(area_condition)
+        query = set_area_condition(query, statuses)
         query = set_forestries_condition(query, forestries)
 
         res = db.session.execute(query).scalars().all()

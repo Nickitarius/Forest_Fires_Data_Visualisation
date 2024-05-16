@@ -22,7 +22,7 @@ def create_map_loc_trace():
             custom_data=["name", "type"],
         )
         .update_traces(
-            name = "Населённые пункты",
+            name="Населённые пункты",
             uid="map_loc",
             hovertemplate=hover_tempalte,
         )

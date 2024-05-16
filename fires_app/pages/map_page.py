@@ -7,7 +7,6 @@ from dash import MATCH, Dash, Input, Output, Patch, State, callback, dcc, html
 
 from fires_app.utils import db_trace_creators, json_trace_creators, map_utils
 
-
 MAP_BACKGROUND_OPTIONS = ["open-street-map", "carto-positron", "carto-darkmatter"]
 # Опции карты по-умолчанию, в т.ч. опции input'ов
 DEFAULT_MAP_OPTIONS = {
@@ -20,7 +19,6 @@ DEFAULT_MAP_OPTIONS = {
 }
 # uid главного слоя данных на карте.
 MAIN_TRACE_UID = "main_trace"
-
 
 dash.register_page(__name__, path="/map", name="Карта")
 
@@ -86,17 +84,28 @@ dom_main_layer_select = dbc.Select(
 dom_dates_input = html.Div(
     id="dates_choice",
     children=[
-        dbc.Label("Начало периода"),
-        dbc.Input(
-            id="date_start",
-            value="2017-01-01",
-            type="date",
+        dbc.Label("Период"),
+        dbc.InputGroup(
+            [
+                dbc.InputGroupText("Начало"),
+                dbc.Input(
+                    id="date_start",
+                    value="2017-01-01",
+                    type="date",
+                ),
+            ],
+            class_name="mb-3",
         ),
-        dbc.Label("Конец периода"),
-        dbc.Input(
-            id="date_end",
-            value="2021-12-31",
-            type="date",
+        dbc.InputGroup(
+            [
+                dbc.InputGroupText("Конец"),
+                dbc.Input(
+                    id="date_end",
+                    value="2021-12-31",
+                    type="date",
+                ),
+            ],
+            class_name="mb-3",
         ),
     ],
 )
@@ -133,6 +142,28 @@ dom_fire_statuses_dropdown = dcc.Dropdown(
     placeholder="Выбор...",
 )
 
+# Площадь пожаров - макс/мин
+dom_area_input = html.Div(
+    [
+        dbc.Label("Площадь пожаров, кв. км.:"),
+        dbc.InputGroup(
+            [
+                dbc.InputGroupText("Мин."),
+                dbc.Input(id="min_area_input", type="number", min=0, value=0),
+            ],
+            class_name="mb-3",
+        ),
+        dbc.InputGroup(
+            [
+                dbc.InputGroupText("Макс."),
+                dbc.Input(id="max_area_input", type="number", min=0, value=1000),
+            ],
+            class_name="mb-3",
+        ),
+    ],
+    id="area_input",
+)
+
 # Панель управления
 dom_control_panel = html.Div(
     id="map-control-panel",
@@ -157,6 +188,7 @@ dom_control_panel = html.Div(
         html.Hr(),
         dbc.Label("Выбор статуса пожаров", html_for="fire_statuses_dropdown"),
         dom_fire_statuses_dropdown,
+        dom_area_input,
     ],
     style={
         "padding": 10,
@@ -306,10 +338,19 @@ def adjust_min_end_date(date_start, date_end):
     Input("main_layer_select", "value"),
     Input("forestries_dropdown", "value"),
     Input(dom_fire_statuses_dropdown, "value"),
+    Input("min_area_input", "value"),
+    Input("max_area_input", "value"),
     prevent_initial_call=True,
 )
 def set_main_layer(
-    fig, date_start, date_end, selected_trace, forestries, fire_statuses
+    fig,
+    date_start,
+    date_end,
+    selected_trace,
+    forestries,
+    fire_statuses,
+    min_area,
+    max_area,
 ):
     """
     Устанавливает гланый слой данных на карте
@@ -323,6 +364,8 @@ def set_main_layer(
         date_end,
         forestries,
         fire_statuses,
+        min_area,
+        max_area,
     )
     return patched_fig
 
