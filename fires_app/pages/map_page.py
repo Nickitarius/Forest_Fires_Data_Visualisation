@@ -3,7 +3,7 @@
 import dash
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-from dash import MATCH, Input, Output, Patch, State, callback, dcc, html
+from dash import MATCH, Dash, Input, Output, Patch, State, callback, dcc, html
 
 from fires_app.utils import db_trace_creators, json_trace_creators, map_utils
 
@@ -14,8 +14,8 @@ DEFAULT_MAP_OPTIONS = {
     "map_zoom_start": 6,
     "opacity": 0.25,
     "mapbox_style": MAP_BACKGROUND_OPTIONS[1],
-    "width": 1500,
-    "height": 800,
+    # "width": 1500,
+    # "height": 800,
 }
 # uid главного слоя данных на карте.
 MAIN_TRACE_UID = "main_trace"
@@ -165,36 +165,32 @@ dom_area_input = html.Div(
 )
 
 # Панель управления
-dom_control_panel = dbc.Card(
+dom_control_panel = html.Div(
     id="map-control-panel",
     children=[
-        dbc.CardBody(
-            # Фоновые слои
+        # Фоновые слои
+        background_layers_panel,
+        html.Hr(),
+        html.Div(
             children=[
-                background_layers_panel,
-                html.Hr(),
-                html.Div(
-                    children=[
-                        dbc.Label("Слой данных", html_for="main_layer_select"),
-                        dom_main_layer_select,
-                        dbc.Label("Прозрачность", html_for="opacity_slider"),
-                        dom_opacity_slider,
-                    ]
-                ),
-                html.Hr(),
-                dom_dates_input,
-                html.Hr(),
-                dbc.Label("Выбор лесничеств", html_for="forestry_dropdown"),
-                dom_select_deselct_all_forestries,
-                dom_forestries_dropdown,
-                html.Hr(),
-                dbc.Label("Выбор статуса пожаров", html_for="fire_statuses_dropdown"),
-                dom_fire_statuses_dropdown,
-                html.Hr(),
-                dom_area_input,
-                html.Hr(),
+                dbc.Label("Слой данных", html_for="main_layer_select"),
+                dom_main_layer_select,
+                dbc.Label("Прозрачность", html_for="opacity_slider"),
+                dom_opacity_slider,
             ]
-        )
+        ),
+        html.Hr(),
+        dom_dates_input,
+        html.Hr(),
+        dbc.Label("Выбор лесничеств", html_for="forestry_dropdown"),
+        dom_select_deselct_all_forestries,
+        dom_forestries_dropdown,
+        html.Hr(),
+        dbc.Label("Выбор статуса пожаров", html_for="fire_statuses_dropdown"),
+        dom_fire_statuses_dropdown,
+        html.Hr(),
+        dom_area_input,
+        html.Hr(),
     ],
     style={
         "padding": 10,
@@ -213,7 +209,7 @@ default_trace = db_trace_creators.create_fires_trace(
 )
 map_fig.add_trace(default_trace)
 map_fig.update_layout(
-    margin={"r": 5, "t": 1, "l": 5, "b": 1},
+    margin={"r": 0, "t": 0, "l": 0, "b": 0},
     # width=1500,
     # height=800,
     legend={"yanchor": "top", "y": 0.95, "xanchor": "left", "x": 0.85},
@@ -233,15 +229,15 @@ dom_graph = dcc.Graph(
         # "maxWidth": "70%",
         # "height": "90vh",
         "width": "100%",
-        # "padding-left": "5px",
+        # "padding-x": "5px",
     },
     # className="col-xl"
 )
 
 # Панель информации о выбранном объекте.
-dom_object_info_panel = dbc.Card(
+dom_object_info_panel = html.Div(
     id="object_info_panel",
-    children=[dbc.CardBody(id="object_info_panel_body")],
+    children=[],
     style={
         "padding": 10,
         # "flex-direction": "column"
@@ -249,22 +245,27 @@ dom_object_info_panel = dbc.Card(
     className="col-sm-2",
 )
 
-layout = html.Div(
+# Страница в целом
+layout = dbc.Card(
     id="map_app",
     children=[
-        dom_control_panel,
-        # html.Div(className="vr"),
-        dom_graph,
-        # html.Div(className="vr"),
-        dom_object_info_panel,
+        dbc.CardBody(
+            children=[
+                dom_control_panel,
+                html.Div(className="vr"),
+                dom_graph,
+                html.Div(className="vr"),
+                dom_object_info_panel,
+            ],
+            style={
+                # "margin": 10,
+                # "maxWidth": "100%",
+                # "height": "90vh",
+                "display": "flex",
+                "flexDirection": "row",
+            },
+        ),
     ],
-    style={
-        "margin": 10,
-        # "maxWidth": "100%",
-        # "height": "90vh",
-        "display": "flex",
-        "flexDirection": "row",
-    },
 )
 
 
@@ -415,7 +416,7 @@ def set_select_deselct_button_text(selected_values, options):
 
 
 @callback(
-    Output("object_info_panel_body", "children"),
+    Output("object_info_panel", "children"),
     Input("map", "clickData"),
     State("main_layer_select", "value"),
     prevent_initial_call=True,

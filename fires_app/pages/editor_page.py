@@ -122,7 +122,7 @@ layout = dbc.Container(
                     },
                 ),
             ],
-            style={"padding": 50},
+            # style={"padding": 50},
         )
     ]
 )

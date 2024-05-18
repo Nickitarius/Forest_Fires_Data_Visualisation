@@ -1,4 +1,4 @@
-"""Функции для работы с геоданными в json, geojson и датафреймах pandas и geopandas."""
+"""Функции для работы с геоданными в json/geojson и датафреймах pandas и geopandas."""
 
 import geopandas as gpd
 import pandas as pd
@@ -8,7 +8,8 @@ from fires_app import DATA_PATH
 
 
 def pd_to_gpd_w_geom(df):
-    """Transforms Pandas DF to Geopandas DF,
+    """
+    Transforms Pandas DF to Geopandas DF,
     reading geometry stored as WKB from 'geom' field.
     """
     geoms = []
@@ -20,7 +21,8 @@ def pd_to_gpd_w_geom(df):
 
 
 def repalce_geometry_with_wkb(gdf):
-    """Recieves GeoPandas DF, deletes geometry,
+    """
+    Recieves GeoPandas DF, deletes geometry,
     writes WKB based on it instead.
     """
     wkb = gdf.geometry.to_wkb(hex=True)
@@ -37,6 +39,7 @@ def get_coords_linestring(gdf):
     for i in gdf["geometry"]:
         lons = lons + i.coords.xy[0].tolist()
         lats = lats + i.coords.xy[1].tolist()
+        # Так надо для разделения координат разных фигур
         lons.append(None)
         lats.append(None)
 

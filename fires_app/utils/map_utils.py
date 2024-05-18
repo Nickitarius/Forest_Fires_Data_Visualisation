@@ -52,7 +52,7 @@ def patch_main_layer(
 
 
 def get_forestries_options(lang="ru"):
-    """Возвращает списки имён и"""
+    """Возвращает списки имён и id лесничеств."""
     forestries = forestry_service.get_all_forestries()
     options = []
     if lang == "ru":
@@ -69,7 +69,7 @@ def get_forestries_options(lang="ru"):
 
 
 def get_fire_statuses_options():
-    """Возвращает списки имён и"""
+    """Возвращает списки имён и id возможных статусов пожаров."""
     statuses = fire_status_service.get_all_fire_statuses()
     options = []
     for f in statuses:

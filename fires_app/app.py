@@ -2,7 +2,7 @@
 
 import dash
 import dash_bootstrap_components as dbc
-from dash import MATCH, Dash, Input, Output, clientside_callback, html
+from dash import Dash, Input, Output, clientside_callback, html
 
 from fires_app import flask_app
 
@@ -55,6 +55,7 @@ navbar = dbc.NavbarSimple(
     brand_href="#",
     color="dark",
     dark=True,
+    class_name="border-bottom",
     # light=True,
 )
 
@@ -62,13 +63,14 @@ dash_app.layout = dbc.Container(
     id="dash_app_container",
     children=[
         navbar,
-        dash.page_container,
+        html.Main(dash.page_container, className="p-3"),
     ],
     # class_name="container-xxl",
     fluid=True,
     style={"padding": 0},
 )
 
+# Переключение между светлой и тёмной темами
 clientside_callback(
     """
     (switchOn) => {
@@ -81,8 +83,6 @@ clientside_callback(
     Output("color_mode_switch", "id"),
     Input("color_mode_switch", "value"),
 )
-
-# Callbacks
 
 if __name__ == "__main__":
     dash_app.run(host="0.0.0.0", port=8050, debug=True)
