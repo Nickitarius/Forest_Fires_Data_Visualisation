@@ -49,16 +49,6 @@ def set_area_condition(query, statuses):
     return query
 
 
-# def get_fires_by_dates_range(date_start, date_end):
-#     """Получает пожары из БД."""
-#     with flask_app.app_context():
-#         query = db.select(Fire).where(
-#             and_(Fire.date_start <= date_end, date_start <= Fire.date_end)
-#         )
-#         res = db.session.execute(query).scalars().all()
-#         return res
-
-
 def get_fires_limited_data(
     date_start,
     date_end,

@@ -3,7 +3,7 @@
 import dash
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-from dash import MATCH, Dash, Input, Output, Patch, State, callback, dcc, html
+from dash import MATCH, Input, Output, Patch, State, callback, dcc, html
 
 from fires_app.utils import db_trace_creators, json_trace_creators, map_utils
 
@@ -165,30 +165,36 @@ dom_area_input = html.Div(
 )
 
 # Панель управления
-dom_control_panel = html.Div(
+dom_control_panel = dbc.Card(
     id="map-control-panel",
     children=[
-        # Фоновые слои
-        background_layers_panel,
-        html.Hr(),
-        html.Div(
+        dbc.CardBody(
+            # Фоновые слои
             children=[
-                dbc.Label("Слой данных", html_for="main_layer_select"),
-                dom_main_layer_select,
-                dbc.Label("Прозрачность", html_for="opacity_slider"),
-                dom_opacity_slider,
+                background_layers_panel,
+                html.Hr(),
+                html.Div(
+                    children=[
+                        dbc.Label("Слой данных", html_for="main_layer_select"),
+                        dom_main_layer_select,
+                        dbc.Label("Прозрачность", html_for="opacity_slider"),
+                        dom_opacity_slider,
+                    ]
+                ),
+                html.Hr(),
+                dom_dates_input,
+                html.Hr(),
+                dbc.Label("Выбор лесничеств", html_for="forestry_dropdown"),
+                dom_select_deselct_all_forestries,
+                dom_forestries_dropdown,
+                html.Hr(),
+                dbc.Label("Выбор статуса пожаров", html_for="fire_statuses_dropdown"),
+                dom_fire_statuses_dropdown,
+                html.Hr(),
+                dom_area_input,
+                html.Hr(),
             ]
-        ),
-        html.Hr(),
-        dom_dates_input,
-        html.Hr(),
-        dbc.Label("Выбор лесничеств", html_for="forestry_dropdown"),
-        dom_select_deselct_all_forestries,
-        dom_forestries_dropdown,
-        html.Hr(),
-        dbc.Label("Выбор статуса пожаров", html_for="fire_statuses_dropdown"),
-        dom_fire_statuses_dropdown,
-        dom_area_input,
+        )
     ],
     style={
         "padding": 10,
@@ -225,17 +231,17 @@ dom_graph = dcc.Graph(
     figure=map_fig,
     style={
         # "maxWidth": "70%",
-        "height": "90vh",
+        # "height": "90vh",
         "width": "100%",
-        "padding-left": "5px",
+        # "padding-left": "5px",
     },
     # className="col-xl"
 )
 
 # Панель информации о выбранном объекте.
-dom_object_info_panel = html.Div(
+dom_object_info_panel = dbc.Card(
     id="object_info_panel",
-    children=[],
+    children=[dbc.CardBody(id="object_info_panel_body")],
     style={
         "padding": 10,
         # "flex-direction": "column"
@@ -247,9 +253,9 @@ layout = html.Div(
     id="map_app",
     children=[
         dom_control_panel,
-        html.Div(className="vr"),
+        # html.Div(className="vr"),
         dom_graph,
-        html.Div(className="vr"),
+        # html.Div(className="vr"),
         dom_object_info_panel,
     ],
     style={
@@ -409,7 +415,7 @@ def set_select_deselct_button_text(selected_values, options):
 
 
 @callback(
-    Output("object_info_panel", "children"),
+    Output("object_info_panel_body", "children"),
     Input("map", "clickData"),
     State("main_layer_select", "value"),
     prevent_initial_call=True,
