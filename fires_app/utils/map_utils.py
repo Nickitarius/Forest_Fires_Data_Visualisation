@@ -1,14 +1,14 @@
 """Содержит функции для работы с данными карты."""
 
-from datetime import date
-
-import dash_bootstrap_components as dbc
-import geopandas as gpd
-from dash import Patch, dcc, html
+from dash import Patch, html
 from geoalchemy2 import shape
-from shapely import geometry
 
-from fires_app.services import fire_service, fire_status_service, forestry_service
+from fires_app.services import (
+    fire_service,
+    fire_status_service,
+    forestry_service,
+    territory_type_service,
+)
 from fires_app.utils import db_trace_creators
 
 
@@ -23,45 +23,76 @@ def replace_trace_by_uid(fig, patch, uid, new_trace):
 
 
 def patch_main_layer(
-    fig, layer, trace_uid, date_start, date_end, forestries=None, fire_statuses=None
+    fig,
+    layer,
+    trace_uid,
+    date_start,
+    date_end,
+    forestries=None,
+    fire_statuses=None,
+    fire_area_min=0,
+    fire_area_max=1000,
+    territory_types=None
 ):
     """Меняет главный слой в данных графика."""
     patch = Patch()
     match layer:
         case "fires":
+            # print(territory_types)
+            # if in territory_types.value:
             new_trace = db_trace_creators.create_fires_trace(
-                trace_uid, date_start, date_end, forestries, fire_statuses
+                trace_uid,
+                date_start,
+                date_end,
+                forestries,
+                fire_statuses,
+                fire_area_min,
+                fire_area_max,
+                territory_types
             )
 
     patch = replace_trace_by_uid(fig, patch, trace_uid, new_trace)
     return patch
 
 
-def get_forestries_options(lang="ru"):
-    """Возвращает списки имён и"""
+def get_forestry_options(lang="ru"):
+    """Возвращает списки имён и id лесничеств."""
     forestries = forestry_service.get_all_forestries()
     options = []
     if lang == "ru":
-        for f in forestries:
-            option = {"value": f.id, "label": f.name_ru}
+        for forestry in forestries:
+            option = {"value": forestry.id, "label": forestry.name_ru}
             options.append(option)
 
     elif lang == "en":
-        for f in forestries:
-            option = {"value": f.id, "label": f.name_en}
+        for forestry in forestries:
+            option = {"value": forestry.id, "label": forestry.name_en}
             options.append(option)
 
     return options
 
 
-def get_fire_statuses_options():
-    """Возвращает списки имён и"""
+def get_fire_status_options():
+    """Возвращает списки имён и id возможных статусов пожаров."""
     statuses = fire_status_service.get_all_fire_statuses()
     options = []
-    for f in statuses:
-        option = {"value": f.id, "label": f.name}
+    for status in statuses:
+        option = {"value": status.id, "label": status.name}
         options.append(option)
 
+    return options
+
+
+def get_territory_type_options():
+    """Возвращает списки имён и id возможных типов территорий."""
+    types = territory_type_service.get_all_territory_types()
+    options = []
+    for type in types:
+        option = {"value": type.id, "label": type.name}
+        options.append(option)
+
+    # Для варианта с отсутствием привязанного типа территории
+    options.append({"value": 0, "label": "Нет"})
     return options
 
 

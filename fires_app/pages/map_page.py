@@ -7,7 +7,6 @@ from dash import MATCH, Dash, Input, Output, Patch, State, callback, dcc, html
 
 from fires_app.utils import db_trace_creators, json_trace_creators, map_utils
 
-
 MAP_BACKGROUND_OPTIONS = ["open-street-map", "carto-positron", "carto-darkmatter"]
 # Опции карты по-умолчанию, в т.ч. опции input'ов
 DEFAULT_MAP_OPTIONS = {
@@ -15,12 +14,9 @@ DEFAULT_MAP_OPTIONS = {
     "map_zoom_start": 6,
     "opacity": 0.25,
     "mapbox_style": MAP_BACKGROUND_OPTIONS[1],
-    "width": 1500,
-    "height": 800,
 }
 # uid главного слоя данных на карте.
 MAIN_TRACE_UID = "main_trace"
-
 
 dash.register_page(__name__, path="/map", name="Карта")
 
@@ -67,7 +63,6 @@ dom_opacity_slider = dcc.Slider(
     id="opacity_slider",
     min=0,
     max=100,
-    # marks={str(i) for i in range(0, 101, 20)},
     value=50,
 )
 
@@ -76,45 +71,117 @@ dom_main_layer_select = dbc.Select(
     id="main_layer_select",
     options=[
         {"label": "Пожары", "value": "fires"},
-        {"label": "Риски пожаров", "value": MAP_BACKGROUND_OPTIONS[1]},
+        {"label": "Риски пожаров", "value": "fire_risks"},
     ],
     value="fires",
 )
-# responsive=True)
 
 # Выбор дат
 dom_dates_input = html.Div(
     id="dates_choice",
     children=[
-        dbc.Label("Начало периода"),
-        dbc.Input(
-            id="date_start",
-            value="2017-01-01",
-            type="date",
+        dbc.Label("Период"),
+        dbc.InputGroup(
+            [
+                dbc.InputGroupText("Начало"),
+                dbc.Input(
+                    id="date_start",
+                    value="2017-01-01",
+                    type="date",
+                ),
+            ],
+            class_name="mb-3",
         ),
-        dbc.Label("Конец периода"),
-        dbc.Input(
-            id="date_end",
-            value="2021-12-31",
-            type="date",
+        dbc.InputGroup(
+            [
+                dbc.InputGroupText("Конец"),
+                dbc.Input(
+                    id="date_end",
+                    value="2021-12-31",
+                    type="date",
+                ),
+            ],
+            class_name="mb-3",
         ),
     ],
 )
 
 # Выбор лесничества
-forestry_options = map_utils.get_forestries_options()
-dom_forestries_dropdown = dcc.Dropdown(
-    id="forestries_dropdown",
-    options=forestry_options,
-    value=forestry_options[0]["value"],
+forestry_options = map_utils.get_forestry_options()
+dom_forestries_dropdown = html.Div(
+    children=[
+        dcc.Dropdown(
+            id={"type": "dropdown_w_all", "index": "forestries"},
+            options=forestry_options,
+            value=forestry_options[0]["value"],
+            multi=True,
+            placeholder="Выбор...",
+            # className="form-control",
+            className="dbc",
+        )
+    ],
+)
+# Кнопка выбора всех лесничеств для dom_forestries_dropdown
+dom_select_all_forestries = html.Div(
+    dbc.Button(
+        # id="select_all_forestries",
+        id={"type": "select_all_button", "index": "forestries"},
+        children="Выбрать все",
+        color="secondary",
+        outline=True,
+        class_name="mb-3",
+        size="sm",
+        # type="select_all_button",
+        # inde
+    )
+)
+
+# Выбор статусов пожаров
+fire_statuses = map_utils.get_fire_status_options()
+dom_fire_statuses_dropdown = dcc.Dropdown(
+    id="fire_statuses_dropdown",
+    # id={"type": "dropdown_w_all", "index": "fire_statuses"},
+    options=fire_statuses,
+    value=fire_statuses[0]["value"],
     multi=True,
     placeholder="Выбор...",
 )
-# Кнопка выбора/отмены выбора всех лесничеств для dom_forestries_dropdown
 
-dom_select_deselct_all_forestries = html.Div(
+# Площадь пожаров - макс/мин
+dom_area_input = html.Div(
+    [
+        dbc.Label("Площадь пожаров, кв. км.:"),
+        dbc.InputGroup(
+            [
+                dbc.InputGroupText("Мин."),
+                dbc.Input(id="min_area_input", type="number", min=0, value=0),
+            ],
+            class_name="mb-3",
+        ),
+        dbc.InputGroup(
+            [
+                dbc.InputGroupText("Макс."),
+                dbc.Input(id="max_area_input", type="number", min=0, value=1000),
+            ],
+            class_name="mb-3",
+        ),
+    ],
+    id="area_input",
+)
+
+# Выбор типов территорий
+territory_types = map_utils.get_territory_type_options()
+dom_territory_types_dropdown = dcc.Dropdown(
+    id={"type": "dropdown_w_all", "index": "territory_types"},
+    options=territory_types,
+    value=territory_types[0]["value"],
+    multi=True,
+    placeholder="Выбор...",
+)
+dom_select_all_territory_types = html.Div(
     dbc.Button(
-        id="select_deselct_all_button",
+        # id="select_all_territory_types",
+        id={"type": "select_all_button", "index": "territory_types"},
         children="Выбрать все",
         color="secondary",
         outline=True,
@@ -123,19 +190,9 @@ dom_select_deselct_all_forestries = html.Div(
     )
 )
 
-# Выбор статусов пожаров
-fire_statuses = map_utils.get_fire_statuses_options()
-dom_fire_statuses_dropdown = dcc.Dropdown(
-    id="fire_statuses_dropdown",
-    options=fire_statuses,
-    value=fire_statuses[0]["value"],
-    multi=True,
-    placeholder="Выбор...",
-)
-
-# Панель управления
-dom_control_panel = html.Div(
-    id="map-control-panel",
+# Базовые функции панели управления
+dom_basic_controls = html.Div(
+    id="basic_controls",
     children=[
         # Фоновые слои
         background_layers_panel,
@@ -148,23 +205,47 @@ dom_control_panel = html.Div(
                 dom_opacity_slider,
             ]
         ),
-        html.Hr(),
+    ],
+)
+
+# Элементы для фильтрации пожаров
+dom_fires_controls = html.Div(
+    id="fires_controls",
+    children=[
         dom_dates_input,
         html.Hr(),
         dbc.Label("Выбор лесничеств", html_for="forestry_dropdown"),
-        dom_select_deselct_all_forestries,
+        dom_select_all_forestries,
         dom_forestries_dropdown,
         html.Hr(),
         dbc.Label("Выбор статуса пожаров", html_for="fire_statuses_dropdown"),
         dom_fire_statuses_dropdown,
+        html.Hr(),
+        dom_area_input,
+        html.Hr(),
+        dbc.Label("Выбор типов территорий"),
+        dom_select_all_territory_types,
+        dom_territory_types_dropdown,
+    ],
+)
+
+dom_fire_risks_controls = html.Div(id="fire_risks_controls")
+
+# Панель управления
+dom_control_panel = html.Div(
+    id="map-control-panel",
+    children=[
+        dom_basic_controls,
+        html.Hr(),
+        html.Div(id="layer_control"),
     ],
     style={
         "padding": 10,
-        # "flex-direction": "column"
     },
     className="col-sm-2",
 )
 
+# Карта
 map_fig = go.Figure()
 default_trace = db_trace_creators.create_fires_trace(
     MAIN_TRACE_UID,
@@ -175,9 +256,7 @@ default_trace = db_trace_creators.create_fires_trace(
 )
 map_fig.add_trace(default_trace)
 map_fig.update_layout(
-    margin={"r": 5, "t": 1, "l": 5, "b": 1},
-    # width=1500,
-    # height=800,
+    margin={"r": 0, "t": 0, "l": 0, "b": 0},
     legend={"yanchor": "top", "y": 0.95, "xanchor": "left", "x": 0.85},
     mapbox={
         "center": DEFAULT_MAP_OPTIONS["map_center_start"],
@@ -192,12 +271,8 @@ dom_graph = dcc.Graph(
     id="map",
     figure=map_fig,
     style={
-        # "maxWidth": "70%",
-        "height": "90vh",
         "width": "100%",
-        "padding-left": "5px",
     },
-    # className="col-xl"
 )
 
 # Панель информации о выбранном объекте.
@@ -211,23 +286,35 @@ dom_object_info_panel = html.Div(
     className="col-sm-2",
 )
 
-layout = html.Div(
+# Страница в целом
+layout = dbc.Card(
     id="map_app",
     children=[
-        dom_control_panel,
-        html.Div(className="vr"),
-        dom_graph,
-        html.Div(className="vr"),
-        dom_object_info_panel,
+        dbc.CardBody(
+            children=[
+                dom_control_panel,
+                html.Div(className="vr"),
+                dom_graph,
+                html.Div(className="vr"),
+                dom_object_info_panel,
+            ],
+            style={
+                "display": "flex",
+                "flexDirection": "row",
+            },
+        ),
     ],
-    style={
-        "margin": 10,
-        # "maxWidth": "100%",
-        # "height": "90vh",
-        "display": "flex",
-        "flexDirection": "row",
-    },
 )
+
+
+@callback(Output("layer_control", "children"), Input("main_layer_select", "value"))
+def set_main_layer(layer_name):
+    "Устанавливает главный слой"
+    match layer_name:
+        case "fires":
+            return dom_fires_controls
+        case "fire_risks":
+            return dom_fire_risks_controls
 
 
 @callback(
@@ -301,15 +388,27 @@ def adjust_min_end_date(date_start, date_end):
 @callback(
     Output("map", "figure", allow_duplicate=True),
     Input("map", "figure"),
+    # Пожар
     Input("date_start", "value"),
     Input("date_end", "value"),
     Input("main_layer_select", "value"),
-    Input("forestries_dropdown", "value"),
+    Input({"type": "dropdown_w_all", "index": "forestries"}, "value"),
     Input(dom_fire_statuses_dropdown, "value"),
+    Input("min_area_input", "value"),
+    Input("max_area_input", "value"),
+    Input({"type": "dropdown_w_all", "index": "territory_types"}, "value"),
     prevent_initial_call=True,
 )
 def set_main_layer(
-    fig, date_start, date_end, selected_trace, forestries, fire_statuses
+    fig,
+    date_start,
+    date_end,
+    selected_trace,
+    forestries,
+    fire_statuses,
+    min_area,
+    max_area,
+    territory_types,
 ):
     """
     Устанавливает гланый слой данных на карте
@@ -323,18 +422,21 @@ def set_main_layer(
         date_end,
         forestries,
         fire_statuses,
+        min_area,
+        max_area,
+        territory_types,
     )
     return patched_fig
 
 
 @callback(
-    Output("forestries_dropdown", "value"),
-    Input("select_deselct_all_button", "n_clicks"),
-    State("forestries_dropdown", "value"),
-    State("forestries_dropdown", "options"),
+    Output({"type": "dropdown_w_all", "index": MATCH}, "value"),
+    Input({"type": "select_all_button", "index": MATCH}, "n_clicks"),
+    State({"type": "dropdown_w_all", "index": MATCH}, "value"),
+    State({"type": "dropdown_w_all", "index": MATCH}, "options"),
     prevent_initial_call=True,
 )
-def select_deselect_all_forestries(n_clicks, selected_values, options):
+def select_deselect_all(n_clicks, selected_values, options):
     """Выбирает или удаляет все объекты из dropdown'а."""
     all_options = [option["value"] for option in options]
     # Если выбран только один вариант, то вместо списка значение будет просто строкой/числом
@@ -346,9 +448,9 @@ def select_deselect_all_forestries(n_clicks, selected_values, options):
 
 
 @callback(
-    Output("select_deselct_all_button", "children"),
-    Input("forestries_dropdown", "value"),
-    State("forestries_dropdown", "options"),
+    Output({"type": "select_all_button", "index": MATCH}, "children"),
+    Input({"type": "dropdown_w_all", "index": MATCH}, "value"),
+    State({"type": "dropdown_w_all", "index": MATCH}, "options"),
     prevent_initial_call=True,
 )
 def set_select_deselct_button_text(selected_values, options):

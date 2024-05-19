@@ -22,7 +22,7 @@ def create_map_loc_trace():
             custom_data=["name", "type"],
         )
         .update_traces(
-            name = "Населённые пункты",
+            name="Населённые пункты",
             uid="map_loc",
             hovertemplate=hover_tempalte,
         )
@@ -32,8 +32,10 @@ def create_map_loc_trace():
 
 def create_map_rail_trace():
     """Возвращает слой с картой железных дорог."""
-    df_rail = geodata_utils.load_geo_from_geojson("geodata/zhd_roads.geojson").drop(
-        columns=["geom:1"]
+    df_rail = (
+        geodata_utils.load_geo_from_json("geodata/zhd_roads.json")
+        .drop(columns=["geom"])
+        .explode()
     )
     lats, lons = geodata_utils.get_coords_linestring(df_rail)
     return (
@@ -55,7 +57,7 @@ def create_map_rail_trace():
 
 def create_map_rivers_trace():
     """Возвращает слой с картой рек."""
-    df_rivers = geodata_utils.load_geo_from_geojson("geodata/rivers.geojson")
+    df_rivers = geodata_utils.load_geo_from_json("geodata/rivers.json").explode()
     lats, lons = geodata_utils.get_coords_linestring(df_rivers)
     return (
         px.line_mapbox(
@@ -98,8 +100,10 @@ def create_map_roads_trace():
 
 
 def create_loc_buf_trace():
-    """Возвращает слой данных с областями, находящимися в определённых радиусах от
-    населённых пунктов."""
+    """
+    Возвращает слой данных с областями, находящимися в определённых радиусах
+    от населённых пунктов.
+    """
     df_loc_buf = geodata_utils.load_geo_from_json("MY buffers/localities_buffers.json")
     return (
         px.choropleth_mapbox(
@@ -116,7 +120,10 @@ def create_loc_buf_trace():
 
 
 def create_road_buf_trace():
-    """Возвращает слой данных с областями, находящимися в определённых радиусах от дорог."""
+    """
+    Возвращает слой данных с областями, находящимися в определённых радиусах
+    от дорог.
+    """
     df_road_buf = geodata_utils.load_geo_from_json("MY buffers/roads_buffers.json")
     return (
         px.choropleth_mapbox(
@@ -133,7 +140,10 @@ def create_road_buf_trace():
 
 
 def create_rivers_buf_trace():
-    """Возвращает слой данных с областями, находящимися в определённых радиусах от рек."""
+    """
+    Возвращает слой данных с областями, находящимися в определённых радиусах
+    от рек.
+    """
     df_rivers_buf = geodata_utils.load_geo_from_json("MY buffers/rivers_buffers.json")
     return (
         px.choropleth_mapbox(
