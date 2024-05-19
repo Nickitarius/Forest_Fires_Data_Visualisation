@@ -388,6 +388,7 @@ def adjust_min_end_date(date_start, date_end):
 @callback(
     Output("map", "figure", allow_duplicate=True),
     Input("map", "figure"),
+    # Пожар
     Input("date_start", "value"),
     Input("date_end", "value"),
     Input("main_layer_select", "value"),
@@ -395,6 +396,7 @@ def adjust_min_end_date(date_start, date_end):
     Input(dom_fire_statuses_dropdown, "value"),
     Input("min_area_input", "value"),
     Input("max_area_input", "value"),
+    Input({"type": "dropdown_w_all", "index": "territory_types"}, "value"),
     prevent_initial_call=True,
 )
 def set_main_layer(
@@ -406,6 +408,7 @@ def set_main_layer(
     fire_statuses,
     min_area,
     max_area,
+    territory_types,
 ):
     """
     Устанавливает гланый слой данных на карте
@@ -421,6 +424,7 @@ def set_main_layer(
         fire_statuses,
         min_area,
         max_area,
+        territory_types,
     )
     return patched_fig
 

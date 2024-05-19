@@ -32,11 +32,14 @@ def patch_main_layer(
     fire_statuses=None,
     fire_area_min=0,
     fire_area_max=1000,
+    territory_types=None
 ):
     """Меняет главный слой в данных графика."""
     patch = Patch()
     match layer:
         case "fires":
+            # print(territory_types)
+            # if in territory_types.value:
             new_trace = db_trace_creators.create_fires_trace(
                 trace_uid,
                 date_start,
@@ -45,6 +48,7 @@ def patch_main_layer(
                 fire_statuses,
                 fire_area_min,
                 fire_area_max,
+                territory_types
             )
 
     patch = replace_trace_by_uid(fig, patch, trace_uid, new_trace)
@@ -87,7 +91,8 @@ def get_territory_type_options():
         option = {"value": type.id, "label": type.name}
         options.append(option)
 
-    # options.append({"value": 0, "label": "Все"})
+    # Для варианта с отсутствием привязанного типа территории
+    options.append({"value": 0, "label": "Нет"})
     return options
 
 

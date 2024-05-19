@@ -15,6 +15,7 @@ def create_fires_trace(
     statuses=None,
     fire_area_min=0,
     fire_area_max=1000,
+    territory_types=None,
 ):
     """Создаёт слой данных с пожарами, в соответствии с условиями."""
     fires = fire_service.get_fires_limited_data(
@@ -24,6 +25,7 @@ def create_fires_trace(
         statuses,
         fire_area_min,
         fire_area_max,
+        territory_types,
     )
     fires_df = pd.DataFrame([t.__dict__ for t in fires])
 
