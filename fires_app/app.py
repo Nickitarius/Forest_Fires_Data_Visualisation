@@ -11,11 +11,11 @@ dash_app = Dash(
     __name__,
     external_stylesheets=[
         dbc.themes.BOOTSTRAP,
-        dbc.icons.FONT_AWESOME,
         dbc.icons.BOOTSTRAP,
     ],
     server=flask_app,
     use_pages=True,
+    suppress_callback_exceptions=True,
 )
 
 # Ссылки на страницы
@@ -65,7 +65,7 @@ dash_app.layout = dbc.Container(
         navbar,
         html.Main(dash.page_container, className="p-3"),
     ],
-    # class_name="container-xxl",
+    class_name="dbc",
     fluid=True,
     style={"padding": 0},
 )

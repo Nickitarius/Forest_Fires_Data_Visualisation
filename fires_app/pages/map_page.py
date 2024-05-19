@@ -71,7 +71,7 @@ dom_main_layer_select = dbc.Select(
     id="main_layer_select",
     options=[
         {"label": "Пожары", "value": "fires"},
-        {"label": "Риски пожаров", "value": MAP_BACKGROUND_OPTIONS[1]},
+        {"label": "Риски пожаров", "value": "fire_risks"},
     ],
     value="fires",
 )
@@ -108,12 +108,18 @@ dom_dates_input = html.Div(
 
 # Выбор лесничества
 forestry_options = map_utils.get_forestry_options()
-dom_forestries_dropdown = dcc.Dropdown(
-    id="forestries_dropdown",
-    options=forestry_options,
-    value=forestry_options[0]["value"],
-    multi=True,
-    placeholder="Выбор...",
+dom_forestries_dropdown = html.Div(
+    children=[
+        dcc.Dropdown(
+            id="forestries_dropdown",
+            options=forestry_options,
+            value=forestry_options[0]["value"],
+            multi=True,
+            placeholder="Выбор...",
+            # className="form-control",
+            className="dbc",
+        )
+    ],
 )
 # Кнопка выбора/отмены выбора всех лесничеств для dom_forestries_dropdown
 dom_select_deselct_all_forestries = html.Div(
@@ -170,7 +176,6 @@ dom_territory_types_dropdown = dcc.Dropdown(
 )
 
 # Базовые функции панели управления
-
 dom_basic_controls = html.Div(
     id="basic_controls",
     children=[
@@ -208,17 +213,23 @@ dom_fires_controls = html.Div(
     ],
 )
 
+dom_fire_risks_controls = html.Div(id="fire_risks_controls")
+
 # Панель управления
 dom_control_panel = html.Div(
     id="map-control-panel",
-    children=[dom_basic_controls, html.Hr(), dom_fires_controls],
+    children=[
+        dom_basic_controls,
+        html.Hr(),
+        html.Div(id="layer_control"),
+    ],
     style={
         "padding": 10,
-        # "flex-direction": "column"
     },
     className="col-sm-2",
 )
 
+# Карта
 map_fig = go.Figure()
 default_trace = db_trace_creators.create_fires_trace(
     MAIN_TRACE_UID,
@@ -230,8 +241,6 @@ default_trace = db_trace_creators.create_fires_trace(
 map_fig.add_trace(default_trace)
 map_fig.update_layout(
     margin={"r": 0, "t": 0, "l": 0, "b": 0},
-    # width=1500,
-    # height=800,
     legend={"yanchor": "top", "y": 0.95, "xanchor": "left", "x": 0.85},
     mapbox={
         "center": DEFAULT_MAP_OPTIONS["map_center_start"],
@@ -247,9 +256,7 @@ dom_graph = dcc.Graph(
     figure=map_fig,
     style={
         "width": "100%",
-        # "padding-x": "5px",
     },
-    # className="col-xl"
 )
 
 # Панель информации о выбранном объекте.
@@ -282,6 +289,15 @@ layout = dbc.Card(
         ),
     ],
 )
+
+
+@callback(Output("layer_control", "children"), Input("main_layer_select", "value"))
+def set_main_layer(layer_name):
+    match layer_name:
+        case "fires":
+            return dom_fires_controls
+        case "fire_risks":
+            return dom_fire_risks_controls
 
 
 @callback(
