@@ -111,7 +111,7 @@ forestry_options = map_utils.get_forestry_options()
 dom_forestries_dropdown = html.Div(
     children=[
         dcc.Dropdown(
-            id="forestries_dropdown",
+            id={"type": "dropdown_w_all", "index": "forestries"},
             options=forestry_options,
             value=forestry_options[0]["value"],
             multi=True,
@@ -121,15 +121,18 @@ dom_forestries_dropdown = html.Div(
         )
     ],
 )
-# Кнопка выбора/отмены выбора всех лесничеств для dom_forestries_dropdown
-dom_select_deselct_all_forestries = html.Div(
+# Кнопка выбора всех лесничеств для dom_forestries_dropdown
+dom_select_all_forestries = html.Div(
     dbc.Button(
-        id="select_deselct_all_button",
+        # id="select_all_forestries",
+        id={"type": "select_all_button", "index": "forestries"},
         children="Выбрать все",
         color="secondary",
         outline=True,
         class_name="mb-3",
         size="sm",
+        # type="select_all_button",
+        # inde
     )
 )
 
@@ -137,6 +140,7 @@ dom_select_deselct_all_forestries = html.Div(
 fire_statuses = map_utils.get_fire_status_options()
 dom_fire_statuses_dropdown = dcc.Dropdown(
     id="fire_statuses_dropdown",
+    # id={"type": "dropdown_w_all", "index": "fire_statuses"},
     options=fire_statuses,
     value=fire_statuses[0]["value"],
     multi=True,
@@ -168,11 +172,22 @@ dom_area_input = html.Div(
 # Выбор типов территорий
 territory_types = map_utils.get_territory_type_options()
 dom_territory_types_dropdown = dcc.Dropdown(
-    id="territory_types_dropdown",
+    id={"type": "dropdown_w_all", "index": "territory_types"},
     options=territory_types,
     value=territory_types[0]["value"],
     multi=True,
     placeholder="Выбор...",
+)
+dom_select_all_territory_types = html.Div(
+    dbc.Button(
+        # id="select_all_territory_types",
+        id={"type": "select_all_button", "index": "territory_types"},
+        children="Выбрать все",
+        color="secondary",
+        outline=True,
+        class_name="mb-3",
+        size="sm",
+    )
 )
 
 # Базовые функции панели управления
@@ -200,7 +215,7 @@ dom_fires_controls = html.Div(
         dom_dates_input,
         html.Hr(),
         dbc.Label("Выбор лесничеств", html_for="forestry_dropdown"),
-        dom_select_deselct_all_forestries,
+        dom_select_all_forestries,
         dom_forestries_dropdown,
         html.Hr(),
         dbc.Label("Выбор статуса пожаров", html_for="fire_statuses_dropdown"),
@@ -209,6 +224,7 @@ dom_fires_controls = html.Div(
         dom_area_input,
         html.Hr(),
         dbc.Label("Выбор типов территорий"),
+        dom_select_all_territory_types,
         dom_territory_types_dropdown,
     ],
 )
@@ -293,6 +309,7 @@ layout = dbc.Card(
 
 @callback(Output("layer_control", "children"), Input("main_layer_select", "value"))
 def set_main_layer(layer_name):
+    "Устанавливает главный слой"
     match layer_name:
         case "fires":
             return dom_fires_controls
@@ -374,7 +391,7 @@ def adjust_min_end_date(date_start, date_end):
     Input("date_start", "value"),
     Input("date_end", "value"),
     Input("main_layer_select", "value"),
-    Input("forestries_dropdown", "value"),
+    Input({"type": "dropdown_w_all", "index": "forestries"}, "value"),
     Input(dom_fire_statuses_dropdown, "value"),
     Input("min_area_input", "value"),
     Input("max_area_input", "value"),
@@ -409,13 +426,13 @@ def set_main_layer(
 
 
 @callback(
-    Output("forestries_dropdown", "value"),
-    Input("select_deselct_all_button", "n_clicks"),
-    State("forestries_dropdown", "value"),
-    State("forestries_dropdown", "options"),
+    Output({"type": "dropdown_w_all", "index": MATCH}, "value"),
+    Input({"type": "select_all_button", "index": MATCH}, "n_clicks"),
+    State({"type": "dropdown_w_all", "index": MATCH}, "value"),
+    State({"type": "dropdown_w_all", "index": MATCH}, "options"),
     prevent_initial_call=True,
 )
-def select_deselect_all_forestries(n_clicks, selected_values, options):
+def select_deselect_all(n_clicks, selected_values, options):
     """Выбирает или удаляет все объекты из dropdown'а."""
     all_options = [option["value"] for option in options]
     # Если выбран только один вариант, то вместо списка значение будет просто строкой/числом
@@ -427,9 +444,9 @@ def select_deselect_all_forestries(n_clicks, selected_values, options):
 
 
 @callback(
-    Output("select_deselct_all_button", "children"),
-    Input("forestries_dropdown", "value"),
-    State("forestries_dropdown", "options"),
+    Output({"type": "select_all_button", "index": MATCH}, "children"),
+    Input({"type": "dropdown_w_all", "index": MATCH}, "value"),
+    State({"type": "dropdown_w_all", "index": MATCH}, "options"),
     prevent_initial_call=True,
 )
 def set_select_deselct_button_text(selected_values, options):

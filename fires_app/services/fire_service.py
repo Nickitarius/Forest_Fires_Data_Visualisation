@@ -10,21 +10,20 @@ from fires_app.models.fire_status import FireStatus
 
 
 def set_forestries_condition(query, forestries):
-    if forestries is not None:
-        # Если есть список лесничеств
-        is_list = isinstance(forestries, list)
-        if is_list and len(forestries) > 0:
-            # Если список лесничеств не пустой
-            forestries_condition = and_(
-                Fire.forestry_id.in_(forestries),
-            )
-            query = query.where(forestries_condition)
-        # Если лесничество есть, и оно одно
-        elif not is_list:
-            forestries_condition = and_(
-                Fire.forestry_id == forestries,
-            )
-            query = query.where(forestries_condition)
+    print(forestries)
+    # Если есть список лесничеств
+    if isinstance(forestries, list):
+        # Если список лесничеств не пустой
+        forestries_condition = and_(
+            Fire.forestry_id.in_(forestries),
+        )
+    # Если лесничество есть, и оно одно
+    else:
+        forestries_condition = and_(
+            Fire.forestry_id == forestries,
+        )
+
+    query = query.where(forestries_condition)
 
     return query
 

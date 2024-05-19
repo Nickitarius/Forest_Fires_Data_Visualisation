@@ -1,12 +1,7 @@
 """Содержит функции для работы с данными карты."""
 
-from datetime import date
-
-import dash_bootstrap_components as dbc
-import geopandas as gpd
-from dash import Patch, dcc, html
+from dash import Patch, html
 from geoalchemy2 import shape
-from shapely import geometry
 
 from fires_app.services import (
     fire_service,
@@ -92,7 +87,7 @@ def get_territory_type_options():
         option = {"value": type.id, "label": type.name}
         options.append(option)
 
-    options.append({"value": 0, "label": "Все"})
+    # options.append({"value": 0, "label": "Все"})
     return options
 
 

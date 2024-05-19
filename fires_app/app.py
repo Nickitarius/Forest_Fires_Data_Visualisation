@@ -15,7 +15,7 @@ dash_app = Dash(
     ],
     server=flask_app,
     use_pages=True,
-    suppress_callback_exceptions=True,
+    # suppress_callback_exceptions=True,
 )
 
 # Ссылки на страницы
