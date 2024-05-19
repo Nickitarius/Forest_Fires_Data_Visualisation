@@ -14,8 +14,6 @@ DEFAULT_MAP_OPTIONS = {
     "map_zoom_start": 6,
     "opacity": 0.25,
     "mapbox_style": MAP_BACKGROUND_OPTIONS[1],
-    # "width": 1500,
-    # "height": 800,
 }
 # uid главного слоя данных на карте.
 MAIN_TRACE_UID = "main_trace"
@@ -65,7 +63,6 @@ dom_opacity_slider = dcc.Slider(
     id="opacity_slider",
     min=0,
     max=100,
-    # marks={str(i) for i in range(0, 101, 20)},
     value=50,
 )
 
@@ -78,7 +75,6 @@ dom_main_layer_select = dbc.Select(
     ],
     value="fires",
 )
-# responsive=True)
 
 # Выбор дат
 dom_dates_input = html.Div(
@@ -111,7 +107,7 @@ dom_dates_input = html.Div(
 )
 
 # Выбор лесничества
-forestry_options = map_utils.get_forestries_options()
+forestry_options = map_utils.get_forestry_options()
 dom_forestries_dropdown = dcc.Dropdown(
     id="forestries_dropdown",
     options=forestry_options,
@@ -120,7 +116,6 @@ dom_forestries_dropdown = dcc.Dropdown(
     placeholder="Выбор...",
 )
 # Кнопка выбора/отмены выбора всех лесничеств для dom_forestries_dropdown
-
 dom_select_deselct_all_forestries = html.Div(
     dbc.Button(
         id="select_deselct_all_button",
@@ -133,7 +128,7 @@ dom_select_deselct_all_forestries = html.Div(
 )
 
 # Выбор статусов пожаров
-fire_statuses = map_utils.get_fire_statuses_options()
+fire_statuses = map_utils.get_fire_status_options()
 dom_fire_statuses_dropdown = dcc.Dropdown(
     id="fire_statuses_dropdown",
     options=fire_statuses,
@@ -164,9 +159,20 @@ dom_area_input = html.Div(
     id="area_input",
 )
 
-# Панель управления
-dom_control_panel = html.Div(
-    id="map-control-panel",
+# Выбор типов территорий
+territory_types = map_utils.get_territory_type_options()
+dom_territory_types_dropdown = dcc.Dropdown(
+    id="territory_types_dropdown",
+    options=territory_types,
+    value=territory_types[0]["value"],
+    multi=True,
+    placeholder="Выбор...",
+)
+
+# Базовые функции панели управления
+
+dom_basic_controls = html.Div(
+    id="basic_controls",
     children=[
         # Фоновые слои
         background_layers_panel,
@@ -179,7 +185,13 @@ dom_control_panel = html.Div(
                 dom_opacity_slider,
             ]
         ),
-        html.Hr(),
+    ],
+)
+
+# Элементы для фильтрации пожаров
+dom_fires_controls = html.Div(
+    id="fires_controls",
+    children=[
         dom_dates_input,
         html.Hr(),
         dbc.Label("Выбор лесничеств", html_for="forestry_dropdown"),
@@ -191,7 +203,15 @@ dom_control_panel = html.Div(
         html.Hr(),
         dom_area_input,
         html.Hr(),
+        dbc.Label("Выбор типов территорий"),
+        dom_territory_types_dropdown,
     ],
+)
+
+# Панель управления
+dom_control_panel = html.Div(
+    id="map-control-panel",
+    children=[dom_basic_controls, html.Hr(), dom_fires_controls],
     style={
         "padding": 10,
         # "flex-direction": "column"
@@ -226,8 +246,6 @@ dom_graph = dcc.Graph(
     id="map",
     figure=map_fig,
     style={
-        # "maxWidth": "70%",
-        # "height": "90vh",
         "width": "100%",
         # "padding-x": "5px",
     },
@@ -258,9 +276,6 @@ layout = dbc.Card(
                 dom_object_info_panel,
             ],
             style={
-                # "margin": 10,
-                # "maxWidth": "100%",
-                # "height": "90vh",
                 "display": "flex",
                 "flexDirection": "row",
             },

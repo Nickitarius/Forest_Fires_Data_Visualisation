@@ -8,7 +8,12 @@ from dash import Patch, dcc, html
 from geoalchemy2 import shape
 from shapely import geometry
 
-from fires_app.services import fire_service, fire_status_service, forestry_service
+from fires_app.services import (
+    fire_service,
+    fire_status_service,
+    forestry_service,
+    territory_type_service,
+)
 from fires_app.utils import db_trace_creators
 
 
@@ -51,31 +56,43 @@ def patch_main_layer(
     return patch
 
 
-def get_forestries_options(lang="ru"):
+def get_forestry_options(lang="ru"):
     """Возвращает списки имён и id лесничеств."""
     forestries = forestry_service.get_all_forestries()
     options = []
     if lang == "ru":
-        for f in forestries:
-            option = {"value": f.id, "label": f.name_ru}
+        for forestry in forestries:
+            option = {"value": forestry.id, "label": forestry.name_ru}
             options.append(option)
 
     elif lang == "en":
-        for f in forestries:
-            option = {"value": f.id, "label": f.name_en}
+        for forestry in forestries:
+            option = {"value": forestry.id, "label": forestry.name_en}
             options.append(option)
 
     return options
 
 
-def get_fire_statuses_options():
+def get_fire_status_options():
     """Возвращает списки имён и id возможных статусов пожаров."""
     statuses = fire_status_service.get_all_fire_statuses()
     options = []
-    for f in statuses:
-        option = {"value": f.id, "label": f.name}
+    for status in statuses:
+        option = {"value": status.id, "label": status.name}
         options.append(option)
 
+    return options
+
+
+def get_territory_type_options():
+    """Возвращает списки имён и id возможных типов территорий."""
+    types = territory_type_service.get_all_territory_types()
+    options = []
+    for type in types:
+        option = {"value": type.id, "label": type.name}
+        options.append(option)
+
+    options.append({"value": 0, "label": "Все"})
     return options
 
 
