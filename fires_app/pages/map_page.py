@@ -3,7 +3,7 @@
 import dash
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-from dash import MATCH, Dash, Input, Output, Patch, State, callback, dcc, html
+from dash import MATCH, Input, Output, Patch, State, callback, dcc, html
 
 from fires_app.utils import db_trace_creators, json_trace_creators, map_utils
 
@@ -13,7 +13,7 @@ DEFAULT_MAP_OPTIONS = {
     "map_center_start": {"lat": 52.25, "lon": 104.3},
     "map_zoom_start": 6,
     "opacity": 0.25,
-    "mapbox_style": MAP_BACKGROUND_OPTIONS[1],
+    "mapbox_style": MAP_BACKGROUND_OPTIONS[0],
 }
 # uid главного слоя данных на карте.
 MAIN_TRACE_UID = "main_trace"
@@ -63,7 +63,7 @@ dom_opacity_slider = dcc.Slider(
     id="opacity_slider",
     min=0,
     max=100,
-    value=50,
+    value=DEFAULT_MAP_OPTIONS["opacity"],
 )
 
 # Выбор основного слоя
@@ -308,8 +308,8 @@ layout = dbc.Card(
 
 
 @callback(Output("layer_control", "children"), Input("main_layer_select", "value"))
-def set_main_layer(layer_name):
-    "Устанавливает главный слой"
+def set_main_layer_controls(layer_name):
+    "Создаёт элементы управления для выбранного слоя."
     match layer_name:
         case "fires":
             return dom_fires_controls
@@ -372,7 +372,7 @@ def set_background_layers(layers_ids, fig):
     Output("date_start", "max"),
     Input("date_start", "value"),
     Input("date_end", "value"),
-    prevent_initial_call=True,
+    # prevent_initial_call=True,
 )
 def adjust_min_end_date(date_start, date_end):
     """
@@ -399,7 +399,7 @@ def adjust_min_end_date(date_start, date_end):
     Input({"type": "dropdown_w_all", "index": "territory_types"}, "value"),
     prevent_initial_call=True,
 )
-def set_main_layer(
+def patch_main_layer(
     fig,
     date_start,
     date_end,
