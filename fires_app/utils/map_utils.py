@@ -12,11 +12,35 @@ from fires_app.services import (
 from fires_app.utils import db_trace_creators
 
 
+def find_trace_index_by_uid(fig, uid):
+    """
+    Находит индекс слоя (его порядковый номер в data) в графике.
+    Возвращает -1, если такого слоя нет.
+    """
+    for i in range(len(fig["data"])):
+        item = fig["data"][i]
+        if item["uid"] == uid:
+            return i
+
+    return -1
+
+
+def find_trace_by_uid(fig, uid):
+    """Находит слой данных в графике plotly по uid."""
+    trace = [item for item in fig["data"] if item["uid"] == uid]
+    if len(trace) > 0:
+        return trace[0]
+    else:
+        return None
+
+
 def replace_trace_by_uid(fig, patch, uid, new_trace):
     """Заменяет слой данных в графике с данным uid на новый слой."""
-    old_trace = [item for item in fig["data"] if item["uid"] == uid]
-    if len(old_trace) > 0:
-        patch["data"].remove(old_trace[0])
+    # Используем именно удаленипе по индексу, потому что удаление по значению
+    # (почему-то) не позволяет заменять данные.
+    trace_index = find_trace_index_by_uid(fig, uid)
+    if trace_index >= 0:
+        del patch["data"][trace_index]
 
     patch["data"].append(new_trace)
     return patch
@@ -32,7 +56,8 @@ def patch_main_layer(
     fire_statuses=None,
     fire_area_min=0,
     fire_area_max=1000,
-    territory_types=None
+    territory_types=None,
+    opacity=1,
 ):
     """Меняет главный слой в данных графика."""
     patch = Patch()
@@ -48,7 +73,20 @@ def patch_main_layer(
                 fire_statuses,
                 fire_area_min,
                 fire_area_max,
-                territory_types
+                territory_types,
+                opacity=opacity,
+            )
+        case "fire_risks":
+            new_trace = db_trace_creators.create_fires_trace(
+                trace_uid,
+                date_start,
+                date_end,
+                forestries,
+                fire_statuses,
+                fire_area_min,
+                fire_area_max,
+                territory_types,
+                opacity=opacity,
             )
 
     patch = replace_trace_by_uid(fig, patch, trace_uid, new_trace)
@@ -87,8 +125,8 @@ def get_territory_type_options():
     """Возвращает списки имён и id возможных типов территорий."""
     types = territory_type_service.get_all_territory_types()
     options = []
-    for type in types:
-        option = {"value": type.id, "label": type.name}
+    for territory_type in types:
+        option = {"value": territory_type.id, "label": territory_type.name}
         options.append(option)
 
     # Для варианта с отсутствием привязанного типа территории

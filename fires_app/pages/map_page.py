@@ -3,7 +3,7 @@
 import dash
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-from dash import MATCH, Dash, Input, Output, Patch, State, callback, dcc, html
+from dash import MATCH, Input, Output, Patch, State, callback, dcc, html
 
 from fires_app.utils import db_trace_creators, json_trace_creators, map_utils
 
@@ -12,8 +12,8 @@ MAP_BACKGROUND_OPTIONS = ["open-street-map", "carto-positron", "carto-darkmatter
 DEFAULT_MAP_OPTIONS = {
     "map_center_start": {"lat": 52.25, "lon": 104.3},
     "map_zoom_start": 6,
-    "opacity": 0.25,
-    "mapbox_style": MAP_BACKGROUND_OPTIONS[1],
+    "opacity": 100,
+    "mapbox_style": MAP_BACKGROUND_OPTIONS[0],
 }
 # uid главного слоя данных на карте.
 MAIN_TRACE_UID = "main_trace"
@@ -63,7 +63,7 @@ dom_opacity_slider = dcc.Slider(
     id="opacity_slider",
     min=0,
     max=100,
-    value=50,
+    value=DEFAULT_MAP_OPTIONS["opacity"],
 )
 
 # Выбор основного слоя
@@ -308,8 +308,8 @@ layout = dbc.Card(
 
 
 @callback(Output("layer_control", "children"), Input("main_layer_select", "value"))
-def set_main_layer(layer_name):
-    "Устанавливает главный слой"
+def set_main_layer_controls(layer_name):
+    "Создаёт элементы управления для выбранного слоя."
     match layer_name:
         case "fires":
             return dom_fires_controls
@@ -332,7 +332,7 @@ def set_mapbox_background(background_name):
 @callback(
     Output("map", "figure", allow_duplicate=True),
     Input("checklist_layers", "value"),
-    Input("map", "figure"),
+    State("map", "figure"),
     prevent_initial_call=True,
 )
 def set_background_layers(layers_ids, fig):
@@ -372,7 +372,6 @@ def set_background_layers(layers_ids, fig):
     Output("date_start", "max"),
     Input("date_start", "value"),
     Input("date_end", "value"),
-    prevent_initial_call=True,
 )
 def adjust_min_end_date(date_start, date_end):
     """
@@ -387,7 +386,7 @@ def adjust_min_end_date(date_start, date_end):
 
 @callback(
     Output("map", "figure", allow_duplicate=True),
-    Input("map", "figure"),
+    State("map", "figure"),
     # Пожар
     Input("date_start", "value"),
     Input("date_end", "value"),
@@ -397,9 +396,10 @@ def adjust_min_end_date(date_start, date_end):
     Input("min_area_input", "value"),
     Input("max_area_input", "value"),
     Input({"type": "dropdown_w_all", "index": "territory_types"}, "value"),
+    Input("opacity_slider", "value"),
     prevent_initial_call=True,
 )
-def set_main_layer(
+def patch_main_layer(
     fig,
     date_start,
     date_end,
@@ -409,6 +409,7 @@ def set_main_layer(
     min_area,
     max_area,
     territory_types,
+    opacity,
 ):
     """
     Устанавливает гланый слой данных на карте
@@ -425,6 +426,7 @@ def set_main_layer(
         min_area,
         max_area,
         territory_types,
+        opacity=opacity / 100,
     )
     return patched_fig
 
@@ -476,8 +478,6 @@ def set_select_deselct_button_text(selected_values, options):
 def display_clicked_object_data(click_data, selected_layer):
     """Отображает данные о выбранном объекте в панели."""
     clicked_object_id = click_data["points"][0]["customdata"][0]
-    patch = Patch()
-    # new_el = html.Div(clicked_object_id)
     match selected_layer:
         case "fires":
             patch = map_utils.get_fire_info_DOM(clicked_object_id)
@@ -486,3 +486,17 @@ def display_clicked_object_data(click_data, selected_layer):
 
     patch = map_utils.get_fire_info_DOM(clicked_object_id)
     return patch
+
+
+@callback(
+    Output("map", "figure", allow_duplicate=True),
+    Input("opacity_slider", "value"),
+    State("map", "figure"),
+    prevent_initial_call=True,
+)
+def set_opacity(value, fig):
+    """Устанавливает прозрачность слоя данных."""
+    patched_fig = Patch()
+    index = map_utils.find_trace_index_by_uid(fig, MAIN_TRACE_UID)
+    patched_fig["data"][index]["marker"]["opacity"] = value
+    return patched_fig

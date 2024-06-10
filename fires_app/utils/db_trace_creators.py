@@ -16,6 +16,7 @@ def create_fires_trace(
     fire_area_min=0,
     fire_area_max=1000,
     territory_types=None,
+    opacity=1,
 ):
     """Создаёт слой данных с пожарами, в соответствии с условиями."""
     fires = fire_service.get_fires_limited_data(
@@ -66,7 +67,7 @@ def create_fires_trace(
             fires_df,
             lat="lat",
             lon="lon",
-            opacity=1,
+            opacity=opacity,
             color_discrete_sequence=["red"],
             custom_data=["id", "code", "date_start", "date_end", "fire_status"],
         )
@@ -75,10 +76,11 @@ def create_fires_trace(
             showlegend=True,
             name="Пожары",
             hovertemplate=hover_template,
-            marker={"size": 10},
+            marker={"size": 10, "opacity": opacity},
         )
         .data[0]
     )
+    # print(res)
     return res
 
 
