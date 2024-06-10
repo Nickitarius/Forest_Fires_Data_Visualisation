@@ -12,7 +12,7 @@ MAP_BACKGROUND_OPTIONS = ["open-street-map", "carto-positron", "carto-darkmatter
 DEFAULT_MAP_OPTIONS = {
     "map_center_start": {"lat": 52.25, "lon": 104.3},
     "map_zoom_start": 6,
-    "opacity": 25,
+    "opacity": 100,
     "mapbox_style": MAP_BACKGROUND_OPTIONS[0],
 }
 # uid главного слоя данных на карте.
@@ -497,17 +497,6 @@ def display_clicked_object_data(click_data, selected_layer):
 def set_opacity(value, fig):
     """Устанавливает прозрачность слоя данных."""
     patched_fig = Patch()
-    # Значение делится на 100, т.к. в слайдере задаётся процент от 0 до 100,
-    # который нужно перевести в дробь
-    # layer = [item for item in fig["data"] if item["uid"] == MAIN_TRACE_UID][0]
-    # patched_fig["data"].remove(layer)
-    # print(layer)
-    trace = map_utils.find_trace_by_uid(fig, MAIN_TRACE_UID)
-    new_trace = trace
-    new_trace["marker"]["opacity"] = value / 100
-    print(trace)
-    patched_fig = map_utils.replace_trace_by_uid(
-        fig, patched_fig, MAIN_TRACE_UID, new_trace
-    )
-    # patched_fig["data"].append(new_layer)
+    index = map_utils.find_trace_index_by_uid(fig, MAIN_TRACE_UID)
+    patched_fig["data"][index]["marker"]["opacity"] = value
     return patched_fig
