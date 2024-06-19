@@ -7,21 +7,12 @@ from ..config.fires_db_config import FiresDB
 
 
 class UchForestry(FiresDB):
+    """Участковое лесничество."""
+
     __tablename__ = "uch_forestries"
     id: Mapped[int] = mapped_column(primary_key=True)
-    name_en: Mapped[str] = mapped_column(
-        String(
-            50,
-            # collation="utf8mb4_general_ci"
-        )
-    )
-    name_ru: Mapped[str] = mapped_column(
-        String(
-            50,
-            #    collation="utf8mb4_general_ci"
-        ),
-        nullable=False,
-    )
+    name_en: Mapped[str] = mapped_column(String(50))
+    name_ru: Mapped[str] = mapped_column(String(50), nullable=False)
 
     # One-to-Many forest_quarter
     forest_quarters: Mapped[List["ForestQuarter"]] = relationship(

@@ -11,20 +11,8 @@ class Dacha(FiresDB):
 
     __tablename__ = "dachas"
     id: Mapped[int] = mapped_column(primary_key=True)
-    name_en: Mapped[Optional[str]] = mapped_column(
-        String(
-            50,
-            #    collation="utf8mb4_general_ci"
-        ),
-        nullable=True,
-    )
-    name_ru: Mapped[str] = mapped_column(
-        String(
-            50,
-            #    collation="utf8mb4_general_ci"
-        ),
-        nullable=False,
-    )
+    name_en: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    name_ru: Mapped[str] = mapped_column(String(50), nullable=False)
 
     # Many-To-One uch_forestries
     uch_forestry_id: Mapped[int] = mapped_column(ForeignKey("uch_forestries.id"))

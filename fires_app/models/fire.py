@@ -11,13 +11,7 @@ from ..config.fires_db_config import FiresDB
 class Fire(FiresDB):
     __tablename__ = "fires"
     id: Mapped[int] = mapped_column(primary_key=True)
-    code: Mapped[str] = mapped_column(
-        String(
-            20,
-            #    collation="utf8mb4_general_ci"
-        ),
-        nullable=False,
-    )
+    code: Mapped[str] = mapped_column(String(20), nullable=False)
     # Центр пожара
     coords: Mapped[Geometry] = mapped_column(Geometry("POINT"), nullable=False)
     date_start: Mapped[datetime.date] = mapped_column(Date, nullable=False)

@@ -11,13 +11,7 @@ class ForestZone(FiresDB):
 
     __tablename__ = "forest_zones"
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(
-        String(
-            50,
-            #    collation="utf8mb4_general_ci"
-        ),
-        nullable=False,
-    )
+    name: Mapped[str] = mapped_column(String(50), nullable=False)
 
     # One-to-Many dachas
     dachas: Mapped[List["Dacha"]] = relationship(back_populates="forest_zone")

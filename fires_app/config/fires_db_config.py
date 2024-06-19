@@ -19,6 +19,11 @@ from ..models.fire_status import FireStatus
 from ..models.territory_type import TerritoryType
 from ..models.fire import Fire
 from ..models.weather_event_type import WeatherEventType
+from ..models.adm_ter_unit import AdmTerUnit
+from ..models.adm_ter_unit_type import AdmTerUnitType
+from ..models.geo_point import GeoPoint
+from ..models.risk_forecast import RiskForecast
+
 
 # MySQL
 # DB_DIALECT = "mysql"
@@ -33,7 +38,9 @@ DB_DIALECT = "postgresql"
 DB_ENGINE = "psycopg"
 DB_USERNAME = "postgres"
 DB_PASSWORD = "pass"
-DB_NAME = "fires_app_test"
+# DB_NAME = "fires_app_test"
+DB_NAME = "fires_app_playground"
+
 
 DB_HOST = "localhost"
 DB_URL = (

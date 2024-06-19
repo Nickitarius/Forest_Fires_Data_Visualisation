@@ -11,13 +11,7 @@ class FireStatus(FiresDB):
 
     __tablename__ = "fire_statuses"
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(
-        String(
-            20,
-            #    collation="utf8mb4_general_ci"
-        ),
-        nullable=False,
-    )
+    name: Mapped[str] = mapped_column(String(20), nullable=False)
 
     # One-to-Many fires
     fires: Mapped[List["Fire"]] = relationship(back_populates="fire_status")
