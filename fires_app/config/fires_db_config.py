@@ -38,8 +38,8 @@ DB_DIALECT = "postgresql"
 DB_ENGINE = "psycopg"
 DB_USERNAME = "postgres"
 DB_PASSWORD = "pass"
-# DB_NAME = "fires_app_test"
-DB_NAME = "fires_app_playground"
+DB_NAME = "fires_app_test"
+# DB_NAME = "fires_app_playground"
 
 
 DB_HOST = "localhost"

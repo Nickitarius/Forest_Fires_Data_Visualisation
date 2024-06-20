@@ -17,7 +17,7 @@ class GeoPoint(FiresDB):
     dist_to_road: Mapped[float] = mapped_column()
     dist_to_set: Mapped[float] = mapped_column()
     elevation: Mapped[float] = mapped_column()
-    aspect: Mapped[float] = mapped_column()
+    aspect: Mapped[float] = mapped_column(nullable=True)
     slope: Mapped[float] = mapped_column()
     vegetation: Mapped[float] = mapped_column()
 
